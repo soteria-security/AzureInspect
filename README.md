@@ -4,41 +4,17 @@ Further the state of Azure security by authoring a PowerShell script that automa
 
 # Setup
 
-AzureInspect requires the administrative PowerShell modules for Microsoft Online, Azure AD (We recommend installing the AzureADPreview module), Exchange administration, Microsoft Graph, Microsoft Intune, Microsoft Teams, and Sharepoint administration. 
+AzureInspect requires the administrative PowerShell modules for Azure administration. 
 
 The AzureInspect.ps1 PowerShell script will validate the installed modules.
 
 If you do not have these modules installed, you will be prompted to install them, and with your approval, the script will attempt installation. Otherwise, you should be able to install them with the following commands in an administrative PowerShell prompt, or by following the instructions at the references below:
 
-	Install-Module -Name MSOnline
+	Install-Module -Name Az -Scope CurrentUser -Repository PSGallery -Force -Confirm:$false
 
-	Install-Module -Name AzureADPreview
+[Install the Azure Az PowerShell module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-7.3.2)
 
-	Install-Module -Name ExchangeOnlineManagement
-
-	Install-Module -Name Microsoft.Online.SharePoint.PowerShell
-
-	Install-Module -Name Microsoft.Graph
-
-	Install-Module -Name MicrosoftTeams
-
-	Install-Module -Name Microsoft.Graph.Intune
-
-[Install MSOnline PowerShell](https://docs.microsoft.com/en-us/powershell/azure/active-directory/install-msonlinev1?view=azureadps-1.0)
-
-[Install Azure AD PowerShell](https://docs.microsoft.com/en-us/powershell/module/azuread/?view=azureadps-2.0)
-
-[Install Exchange Online PowerShell](https://docs.microsoft.com/en-us/powershell/exchange/exchange-online-powershell-v2?view=exchange-ps)
-
-[Install SharePoint](https://docs.microsoft.com/en-us/powershell/sharepoint/sharepoint-online/connect-sharepoint-online?view=sharepoint-ps)
-
-[Install Microsoft Graph SDK](https://docs.microsoft.com/en-us/graph/powershell/installation)
-
-[Install Microsoft Teams PowerShell Module](https://docs.microsoft.com/en-us/microsoftteams/teams-powershell-install)
-
-[Install Microsoft Intune PowerShell SDK](https://github.com/microsoft/Intune-PowerShell-SDK)
-
-Once the above are installed, download the AzureInspect source code folder from Github using your browser or by using *git clone*.
+Once the modules are installed, download the AzureInspect source code folder from Github using your browser or by using *git clone*.
 
 As you will run AzureInspect with administrative privileges, you should place it in a logical location and make sure the contents of the folder are readable and writable only by the administrative user. This is especially important if you intend to install AzureInspect in a location where it will be executed frequently or used as part of an automated process.
 
@@ -82,11 +58,11 @@ To break down the parameters further:
 * *SelectedInspectors* is the name or names of the inspector or inspectors you wish to run with AzureInspect. If multiple inspectors are selected they must be comma separated. Only the named inspectors will be run.
 * *ExcludedInspectors*  is the name or names of the inspector or inspectors you wish to prevent from running with AzureInspect. If multiple inspectors are selected they must be comma separated. All modules other included modules will be run.
 
-When you execute AzureInspect with *-Auth MFA*, it may produce several graphical login prompts that you must sequentially log into. This is normal behavior as Exchange, SharePoint etc. have separate administration modules and each requires a different login session. If you simply log in the requested number of times, AzureInspect should begin to execute. This is the opposite of fun and we're seeking a workaround, but needless to say we feel the results are worth the minute spent looking at MFA codes.
+When you execute AzureInspect with *-Auth MFA*, it may produce one or more graphical login prompts that you must sequentially log into. This is normal behavior. If you simply log in the requested number of times, AzureInspect should begin to execute.
 
 As AzureInspect executes, it will steadily print status updates indicating which inspection task is running.
 
-AzureInspect may take some time to execute. This time scales with the size and complexity of the environment under test. For example, some inspection tasks involve scanning the account configuration of all users. This may occur near-instantly for an organization with 50 users, or could take entire minutes (!) for an organization with 10000. 
+AzureInspect may take some time to execute. This time scales with the size and complexity of the environment under test. For example, some inspection tasks involve scanning the configuration of all Azure machine assets. This may occur near-instantly for an organization with a handful of assets, or could take entire minutes (!) for an organization with 10000. 
 
 # Output
 
@@ -100,10 +76,8 @@ AzureInspect creates the directory specified in the out_path parameter. This dir
 
 AzureInspect can't run properly unless the Azure account you authenticate with has appropriate privileges. AzureInspect requires, at minimum, the following:
 
-* Global Administrator
-* SharePoint Administrator
-
-We realize that these are extremely permissive roles, unfortunately due to the use of Microsoft Graph, we are restricted from using lesser prileges by Microsoft. Application and Cloud Application Administrator roles (used to grant delegated and application permissions) are restricted from granting permissions for Microsoft Graph or Azure AD PowerShell modules. [https://docs.microsoft.com/en-us/azure/active-directory/roles/permissions-reference#application-administrator](https://docs.microsoft.com/en-us/azure/active-directory/roles/permissions-reference#application-administrator) 
+* Reader
+* Security Reader
 
 # Developing Inspector Modules
 
@@ -147,7 +121,7 @@ Example .json file, BypassingSafeAttachments.json:
 ```
 {
 	"FindingName": "Do Not Bypass the Safe Attachments Filter",
-	"Description": "In Exchange, it is possible to create mail transport rules that bypass the Safe Attachments detection capability. The rules listed above bypass the Safe Attachments capability. Consider revie1wing these rules, as bypassing the Safe Attachments capability even for a subset of senders could be considered insecure depending on the context or may be an indicator of compromise.",
+	"Description": "In Exchange, it is possible to create mail transport rules that bypass the Safe Attachments detection capability. The rules listed above bypass the Safe Attachments capability. Consider reviewing these rules, as bypassing the Safe Attachments capability even for a subset of senders could be considered insecure depending on the context or may be an indicator of compromise.",
 	"Remediation": "Navigate to the Mail Flow -> Rules screen in the Exchange Admin Center. Look for the offending rules and begin the process of assessing who created them and whether they are necessary to the continued function of your organization. If they are not, remove the rules.",
 	"AffectedObjects": "",
 	"References": [

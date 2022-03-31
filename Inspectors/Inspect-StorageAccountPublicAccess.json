@@ -1,6 +1,6 @@
 {
-	"FindingName": "Blobs allow public access",
-	"Description": "Public access allows for anonymous, public read access to a container and its blobs.",
+	"FindingName": "Storage Accounts Allow Public Access",
+	"Description": "Public access is configured for the identified storage accounts. This non-default configuration, if explicitly configured, can allow for anonymous, public read access to a container and its blobs. ",
 	"Remediation": "Disable public access for storage accounts, unless it is a business requirement. If public access is required, monitor anonymous requests using Azure Metrics Explorer.\nTo change access levels:\nGo to \"Storage Accounts\" > select the affected storage account, select Containers under \"Data Storage\" > select the resources and select \"change access level\" at the top of the page > change the Public access level drop down to \"Private (no anonymous access)\"\nAlternatively, the following PowerShell commands can be run on each of the affected blobs:\nSet-AzStorageAccount -ResourceGroupName \"$ResourceGroupName\" -Name \"$StorageAccountName\" -AllowBlobPublicAccess $false",
 	"Impact": "Informational",
 	"AffectedObjects": "",

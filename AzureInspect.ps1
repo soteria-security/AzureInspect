@@ -41,12 +41,14 @@ param (
 	[Parameter(Mandatory = $true,
 		HelpMessage = 'Auth type')]
 	[ValidateSet('ALREADY_AUTHED', 'MFA',
-		IgnoreCase = $false)]
+		IgnoreCase = $true)]
 	[string] $Auth,
-	$Username,
 	[string[]] $SelectedInspectors = @(),
 	[string[]] $ExcludedInspectors = @()
 )
+
+# Import script used for Error logging
+. .\Write-ErrorLog.ps1
 
 $org_name = $OrgName
 $out_path = $OutPath
@@ -55,14 +57,31 @@ $excluded_inspectors = $ExcludedInspectors
 
 
 Function Connect-Services{
-    # Log into every service prior to the analysis.
-    If ($auth -EQ "MFA") {
-		Write-Output "Connecting to Azure Services"
-        Connect-AzAccount
-    }
+    Try {
+		# Log into the Azure service prior to the analysis.
+		If ($auth -EQ "MFA") {
+			Write-Output "Connecting to Azure Services"
+			Connect-AzAccount
+		}
+	}
+	Catch {
+		Write-Warning "Error message: $_"
+	
+		$message = $_.ToString()
+		$exception = $_.Exception
+		$strace = $_.ScriptStackTrace
+		$failingline = $_.InvocationInfo.Line
+		$positionmsg = $_.InvocationInfo.PositionMessage
+		$pscommandpath = $_.InvocationInfo.PSCommandPath
+		$failinglinenumber = $_.InvocationInfo.ScriptLineNumber
+		$scriptname = $_.InvocationInfo.ScriptName
+		Write-Verbose "Write to log"
+		Write-ErrorLog -message $message -exception $exception -scriptname $scriptname -failinglinenumber $failinglinenumber -failingline $failingline -pscommandpath $pscommandpath -positionmsg $pscommandpath -stacktrace $strace
+		Write-Verbose "Errors written to log"
+	}
 }
 
-#Function to change color of text on errors for specific messages
+# Function to change color of text on errors for specific messages
 Function Colorize($ForeGroundColor){
     $color = $Host.UI.RawUI.ForegroundColor
     $Host.UI.RawUI.ForegroundColor = $ForeGroundColor
@@ -89,13 +108,30 @@ Function Confirm-InstalledModules{
     foreach ($module in $modules){
         if ($installed.Name -notcontains $module){
             $message = Write-Output "`n$module is not installed."
-            $message1 = Write-Output 'The module may be installed by running "Install-Module -Name Az -Scope CurrentUser -Repository PSGallery -Force -Confirm:$false" in an elevated PowerShell window.'
+            $message1 = Write-Output 'The required modules may be installed en masse by running "Install-Module -Name Az -Scope CurrentUser -Repository PSGallery -Force -Confirm:$false" in an elevated PowerShell window.'
             Colorize Red ($message)
             Colorize Yellow ($message1)
-            $install = Read-Host -Prompt "Would you like to attempt installation now? (Y|N)"
+            $install = Read-Host -Prompt "Would you like to attempt installation of the individual modules now? (Y|N)"
             If ($install -eq 'y') {
-                Install-Module $module -Scope CurrentUser -Force -Confirm:$false
-                $count ++
+				Try{
+					Install-Module -Name $module -Scope CurrentUser -Repository PSGallery -Force -Confirm:$false
+					$count ++
+				}
+				Catch {
+					Write-Warning "Error message: $_"
+				
+					$message = $_.ToString()
+					$exception = $_.Exception
+					$strace = $_.ScriptStackTrace
+					$failingline = $_.InvocationInfo.Line
+					$positionmsg = $_.InvocationInfo.PositionMessage
+					$pscommandpath = $_.InvocationInfo.PSCommandPath
+					$failinglinenumber = $_.InvocationInfo.ScriptLineNumber
+					$scriptname = $_.InvocationInfo.ScriptName
+					Write-Verbose "Write to log"
+					Write-ErrorLog -message $message -exception $exception -scriptname $scriptname -failinglinenumber $failinglinenumber -failingline $failingline -pscommandpath $pscommandpath -positionmsg $pscommandpath -stacktrace $strace
+					Write-Verbose "Errors written to log"
+				}	
             }
         }
         Else {
@@ -121,14 +157,14 @@ Function Confirm-InstalledModules{
 If ($Auth -eq 'ALREADY_AUTHED'){
 	Connect-Services
 }Else{
-	#Start Script
+	# Start Script
 	Confirm-InstalledModules
 }
 
 
 # Get a list of every available detection module by parsing the PowerShell
 # scripts present in the .\inspectors folder. 
-#Exclude specified Inspectors
+# Exclude specified Inspectors
 If ($excluded_inspectors -and $excluded_inspectors.Count){
 	$excluded_inspectors = foreach ($inspector in $excluded_inspectors){"$inspector.ps1"}
 	$inspectors = (Get-ChildItem .\inspectors\*.ps1 -exclude $excluded_inspectors).Name | ForEach-Object { ($_ -split ".ps1")[0] }
@@ -137,7 +173,7 @@ else {
 	$inspectors = (Get-ChildItem .\inspectors\*.ps1).Name | ForEach-Object { ($_ -split ".ps1")[0] }
 }
 
-#Use Selected Inspectors
+# Use Selected Inspectors
 If ($selected_inspectors -AND $selected_inspectors.Count) {
 	"The following inspectors were selected for use: "
 	Foreach ($inspector in $selected_inspectors){
@@ -156,7 +192,7 @@ Else {
 	$selected_inspectors = $inspectors
 }
 
-#Create Output Directory if required
+# Create Output Directory if required
 Try {
 	New-Item -ItemType Directory -Force -Path $out_path | Out-Null
 	If ((Test-Path $out_path) -eq $true){
@@ -186,6 +222,10 @@ ForEach ($selected_inspector in $selected_inspectors) {
 		
 		# Add the finding to the list of all findings.
 		$findings += $finding
+	}
+	Else {
+		Write-Output "$selected_inspector is not a valid inspector or could not be found. Please re-run the script and select valid inspectors."
+		Confirm-Close
 	}
 }
 
