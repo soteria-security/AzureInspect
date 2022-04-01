@@ -1,8 +1,8 @@
 {
 	"FindingName": "Storage Accounts Minimum TLS Version Less Than TLSv1.2",
-	"Description": "Cross Tenant Replication is configured for the identified storage accounts. This is a default configuration is a security concern as the tenant's data can be replicated to a storage account in a foreign tenant. ",
-	"Remediation": "Disable Cross Tenant Replication for storage accounts, unless it is a business requirement. If this feature is required, monitor access requests using Azure Metrics Explorer.\nTo remediate for existing Storage Accounts:\nGo to \"Storage Accounts\" > select the affected storage account, select \"Object replication\" under \"Data Management\" > select the \"Advanced settings\" and uncheck the \"Allow cross-tenant replication\" box, select OK to save this configuration.\nAlternatively, the following PowerShell commands can be run on each of the affected blobs:\nSet-AzStorageAccount -ResourceGroupName \"$ResourceGroupName\" -Name \"$StorageAccountName\" -AllowCrossTenantReplication $false\n\nTo configure a new Storage Account to disallow Cross Tenant Replication navigate to the \"Advanced\" tab during account creation. Under the \"Blob storage\" section, uncheck the \"Allow cross-tenant replication\" box.",
-	"Impact": "Informational",
+	"Description": "The identified Storage Accounts have configurations that allow insecure TLS versions. TLS 1.0 and 1.1 are susceptible to downgrade attacks and other vulnerabilities. All Storage Accounts should accept at a minimum TLS version 1.2.",
+	"Remediation": "Go to storage accounts > select the affected storage account > under the \"Minimum TLS version\", select Version 1.2, and save.",
+	"Impact": "Low",
 	"AffectedObjects": "",
 	"References": [
 		{

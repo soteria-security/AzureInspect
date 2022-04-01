@@ -1,8 +1,8 @@
 {
-	"FindingName": "Soft Delete Retention < 90 Days",
-	"Description": "Soft delete retention is set for less than 90 days. Soft delete allows you to recover an accidentally deleted key vault for a specified amount of time. This prevents any accidental loss of secrets, certificates, and keys in the key vault.",
-	"Remediation": "Select Key Vault from the Azure Portal > click on \"Properties\" tab > select the radio button corresponding to \"Enable soft delete\" > enter a retention period in days. The recommended configuration for Soft Delete Retention is 90 days, unless superseded by policy or regulatory requirements.",
-	"Impact": "Informational",
+	"FindingName": "Logging Not Enabled on Key Vaults",
+	"Description": "Logging is not enabled on the identified Key Vaults. Logging should be enabled on all Key Vaults to track access and changes to keys, secrets, and certificates.",
+	"Remediation": "Select Key Vault from the Azure Portal > click on \"Diagnostic settings\" under Monitoring > select \"Add diagnostic setting\" > select the log types and destination details of your choice and select \"Save\".",
+	"Impact": "Critical",
 	"AffectedObjects": "",
 	"References": [
         {
@@ -12,6 +12,10 @@
 		{
 			"Url": "https://docs.microsoft.com/en-us/azure/key-vault/general/logging?tabs=Vault",
 			"Text": "Azure Key Vault logging"
+		},
+		{
+			"Url":"https://docs.microsoft.com/en-us/azure/key-vault/general/howto-logging?tabs=azure-cli",
+			"Text":"Enable Key Vault logging"
 		}
 	]
 }

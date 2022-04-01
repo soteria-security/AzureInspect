@@ -1,7 +1,7 @@
 {
 	"FindingName": "Logging Not Enabled for Storage Accounts",
 	"Description": "Logging for identified Storage Accounts is disabled. Logging access to containers and blobs and alerts should be configured to ensure proper access and receive notification of illicit permissions and actions. Azure storage logging can be configured for read, write, and delete requests for the blob, table, and queue services.",
-	"Impact": "Informational",
+	"Impact": "Critical",
 	"AffectedObjects": "",
 	"References": [
 		{

@@ -1,7 +1,7 @@
 {
 	"FindingName": "Soft Delete Not Enabled for Storage Accounts",
 	"Description": "Soft delete for identified Storage Accounts is disabled. Soft delete allows you to recover an accidentally deleted containers and blobs for a specified amount of time. This prevents any accidental loss of data.",
-	"Impact": "Informational",
+	"Impact": "Medium",
 	"AffectedObjects": "",
 	"References": [
 		{
