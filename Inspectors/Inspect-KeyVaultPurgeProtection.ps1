@@ -1,29 +1,25 @@
-function Inspect-BlobContext {
+function Inspect-KeyVaultPurgeProtection {
     Try {
-        $blobs = @()
+        $results = @()
         
-        $resourceGroups = (Get-AzResourceGroup).ResourceGroupName
+        $keyVaults = Get-AzKeyVault -WarningAction SilentlyContinue
 
-        Foreach ($resource in $resourceGroups){
-            $storageAccounts = Get-AzStorageAccount -ResourceGroupName $resource
-            $context = $storageAccounts.Context
-
-            Foreach ($account in $storageAccounts){
-                $blob = Get-AzStorageContainerAcl -Context $context | Where-Object {$_.PublicAccess -eq "Blob"}
-
+        Foreach ($vault in $keyVaults){
+            $vault = Get-AzKeyVault -VaultName $vault.VaultName -WarningAction SilentlyContinue
+            If ($vault.EnablePurgeProtection -ne $true){
                 $result = New-Object psobject
-                $result | Add-Member -MemberType NoteProperty -name 'Resource Group' -Value $resource -ErrorAction SilentlyContinue
-                $result | Add-Member -MemberType NoteProperty -name 'Blob' -Value $blob.Name -ErrorAction SilentlyContinue
+                $result | Add-Member -MemberType NoteProperty -name 'Vault' -Value $vault.VaultName -ErrorAction SilentlyContinue
+                $result | Add-Member -MemberType NoteProperty -name 'Location' -Value $vault.Location -ErrorAction SilentlyContinue
 
-                $blobs += $result
+                $results += $result
             }
         }
 
             
-        If ($blobs.Count -NE 0) {
+        If ($results.Count -NE 0) {
             $findings = @()
-            foreach ($x in $blobs) {
-                $findings += "Blob Name: $($x.Blob), Resource Group: $($x.'Resource Group')"
+            foreach ($x in $results){
+                $findings += "Cluster Name: $($x.Vault), Location: $($x.Location)"
             }
             return $findings
         }
@@ -47,4 +43,4 @@ function Inspect-BlobContext {
     }
 }
 
-return Inspect-BlobContext
+return Inspect-KeyVaultPurgeProtection

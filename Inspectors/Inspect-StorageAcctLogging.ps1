@@ -1,4 +1,4 @@
-function Inspect-ContainerACL {
+function Inspect-StorageAcctLogging {
     Try {
         $containers = @()
         
@@ -9,12 +9,13 @@ function Inspect-ContainerACL {
             $context = $storageAccounts.Context
 
             Foreach ($account in $storageAccounts){
-                $container = Get-AzStorageContainerAcl -Context $context | Where-Object {$_.PublicAccess -eq "Container"}
+                $container = Get-AzStorageServiceProperty -ServiceType Blob -Context $context | Where-Object {$_.Logging.LoggingOperations -eq 'None'}
                 
                 foreach ($item in $container) {
                     $result = New-Object psobject
+                    $result | Add-Member -MemberType NoteProperty -Name 'Account Name' -Value $account.StorageAccountName
                     $result | Add-Member -MemberType NoteProperty -name 'Resource Group' -Value $resource -ErrorAction SilentlyContinue
-                    $result | Add-Member -MemberType NoteProperty -name 'Container' -Value $item.Name -ErrorAction SilentlyContinue
+                    $result | Add-Member -MemberType NoteProperty -name 'Logging' -Value $item.Logging.LoggingOperations -ErrorAction SilentlyContinue
 
                     $containers += $result
                 }
@@ -25,7 +26,7 @@ function Inspect-ContainerACL {
         If ($containers.Count -NE 0) {
             $findings = @()
             foreach ($x in $containers) {
-                $findings += "Container Name: $($x.Container), Resource Group: $($x.'Resource Group')"
+                $findings += "Container Name: $($x.'Account Name'), Resource Group: $($x.'Resource Group'), Logging Enabled: $($x.'Logging')"
             }
             Return $findings
         }
@@ -49,4 +50,4 @@ function Inspect-ContainerACL {
     }
 }
 
-return Inspect-ContainerACL
+return Inspect-StorageAcctLogging

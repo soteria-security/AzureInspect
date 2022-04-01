@@ -614,7 +614,7 @@
                     </td>
                     <td class="c11" colspan="1" rowspan="1">
                         <p class="c8">
-                            <span class="c23">Impact</span>
+                            <span class="c23">Risk</span>
                         </p>
                     </td>
 					<!--
@@ -669,7 +669,13 @@
 <!--BEGIN_FINDING_LONG_REPEATER-->
 		<h2 class="c19" id="finding_{{FINDING_NUMBER}}" style="text-align:left">
             <span class="c2" style="font-size:20">{{FINDING_NUMBER}}: {{FINDING_NAME}}</span>
-        </h1>
+        </h2>
+        <span class="finding-paragraph-spacing">&nbsp;</span>
+        <p class="finding-paragraph">
+            <span class="finding-detail-heading">Risk:</span>
+            <span class="finding-detail-value">{{IMPACT}}</span>
+        </p>
+        <span class="finding-paragraph-spacing">&nbsp;</span>
         <p class="c20">
             <span class="finding-detail-heading">Affected Azure Objects:</span>
         </p>
@@ -686,13 +692,6 @@
         </p>
         <p class="finding-paragraph">
             <span class="finding-detail-value">{{DESCRIPTION}}</span>
-        </p>
-        <span class="finding-paragraph-spacing">&nbsp;</span>
-        <p class="finding-paragraph">
-            <span class="finding-detail-heading">Risk:</span>
-        </p>
-        <p class="finding-paragraph">
-            <span class="finding-detail-value">{{IMPACT}}</span>
         </p>
         <span class="finding-paragraph-spacing">&nbsp;</span>
         <p class="finding-paragraph">

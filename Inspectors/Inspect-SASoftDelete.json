@@ -1,0 +1,16 @@
+{
+	"FindingName": "Soft Delete Not Enabled for Storage Accounts",
+	"Description": "Soft delete for identified Storage Accounts is disabled. Soft delete allows you to recover an accidentally deleted containers and blobs for a specified amount of time. This prevents any accidental loss of data.",
+	"Impact": "Informational",
+	"AffectedObjects": "",
+	"References": [
+		{
+			"Url": "https://docs.microsoft.com/en-us/azure/storage/blobs/soft-delete-container-enable?tabs=azure-portal",
+			"Text": "Enable and manage soft delete for containers"
+		},
+        {
+			"Url": "https://docs.microsoft.com/en-us/azure/storage/blobs/soft-delete-blob-enable?tabs=azure-portal",
+			"Text": "Enable soft delete for blobs"
+		}
+	]
+}

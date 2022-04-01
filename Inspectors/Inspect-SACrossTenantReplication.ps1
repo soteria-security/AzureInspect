@@ -1,6 +1,6 @@
-function Inspect-StorageAccountPublicAccess {
+function Inspect-SACrossTenantReplication {
 	Try {
-		$storageAccts_with_public_access = @()
+		$storageAccts_with_CTR = @()
 		
 		$resourceGroups = (Get-AzResourceGroup).ResourceGroupName
 
@@ -8,14 +8,14 @@ function Inspect-StorageAccountPublicAccess {
 			$storageAccounts = Get-AzStorageAccount -ResourceGroupName $resource
 
 			Foreach ($account in $storageAccounts){
-				$storageAccts_with_public_access += Get-AzStorageAccount -ResourceGroupName $resource -Name $account.StorageAccountName | Where-Object {$_.AllowBlobPublicAccess -eq $true}
+				$storageAccts_with_CTR += Get-AzStorageAccount -ResourceGroupName $resource -Name $account.StorageAccountName | Where-Object {$_.AllowCrossTenantReplication -eq $true}
 			}
 		}
 
 			
-		If ($storageAccts_with_public_access.Count -NE 0) {
+		If ($storageAccts_with_CTR.Count -NE 0) {
 			$findings = @()
-            foreach ($x in $storageAccts_with_public_access){
+            foreach ($x in $storageAccts_with_CTR){
                 $findings += "Storage Account: $($x.StorageAccountName), Resource Group: $($x.ResourceGroupName)"
 			}
 			return $findings
@@ -40,4 +40,4 @@ function Inspect-StorageAccountPublicAccess {
 	}
 }
 
-return Inspect-StorageAccountPublicAccess
+return Inspect-SACrossTenantReplication

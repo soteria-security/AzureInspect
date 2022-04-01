@@ -1,6 +1,6 @@
-function Inspect-StorageAccountPublicAccess {
+function Inspect-SAMinimumTLS {
 	Try {
-		$storageAccts_with_public_access = @()
+		$storageAccts_TLS = @()
 		
 		$resourceGroups = (Get-AzResourceGroup).ResourceGroupName
 
@@ -8,15 +8,15 @@ function Inspect-StorageAccountPublicAccess {
 			$storageAccounts = Get-AzStorageAccount -ResourceGroupName $resource
 
 			Foreach ($account in $storageAccounts){
-				$storageAccts_with_public_access += Get-AzStorageAccount -ResourceGroupName $resource -Name $account.StorageAccountName | Where-Object {$_.AllowBlobPublicAccess -eq $true}
+				$storageAccts_TLS += Get-AzStorageAccount -ResourceGroupName $resource -Name $account.StorageAccountName | Where-Object {$_.MinimumTlsVersion -ne 'TLS1_2'}
 			}
 		}
 
 			
-		If ($storageAccts_with_public_access.Count -NE 0) {
+		If ($storageAccts_TLS.Count -NE 0) {
 			$findings = @()
-            foreach ($x in $storageAccts_with_public_access){
-                $findings += "Storage Account: $($x.StorageAccountName), Resource Group: $($x.ResourceGroupName)"
+            foreach ($x in $storageAccts_TLS){
+                $findings += "Storage Account: $($x.StorageAccountName), Resource Group: $($x.ResourceGroupName), Current TLS Setting: $($x.MinimumTlsVersion)"
 			}
 			return $findings
 		}
@@ -40,4 +40,4 @@ function Inspect-StorageAccountPublicAccess {
 	}
 }
 
-return Inspect-StorageAccountPublicAccess
+return Inspect-SAMinimumTLS

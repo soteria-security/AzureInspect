@@ -1,0 +1,17 @@
+{
+	"FindingName": "Purge Protection Not Enabled on Azure Key Vaults",
+	"Description": "Purge Protection for key vaults are not enabled. Purge protection is an optional Key Vault behavior and is not enabled by default. Purge protection can only be enabled once soft-delete is enabled. It can be turned on via CLI or PowerShell. Purge protection is recommended when using keys for encryption to prevent data loss. Most Azure services that integrate with Azure Key Vault, such as Storage, require purge protection to prevent data loss.\nWhen purge protection is on, a vault or an object in the deleted state cannot be purged until the retention period has passed. Soft-deleted vaults and objects can still be recovered, ensuring that the retention policy will be followed.\nThe default retention period is 90 days, but it is possible to set the retention policy interval to a value from 7 to 90 days through the Azure portal. Once the retention policy interval is set and saved it cannot be changed for that vault.",
+	"Remediation": "Select Key Vault from the Azure Portal > click on \"Properties\" tab > select the radio button corresponding to \"Enable soft delete\" > enter a retention period in days. The recommended configuration for Soft Delete Retention is 90 days.",
+	"Impact": "Informational",
+	"AffectedObjects": "",
+	"References": [
+        {
+            "Url":"https://docs.microsoft.com/en-us/azure/key-vault/general/soft-delete-overview#purge-protection",
+            "Text": "Purge protection"
+        },
+		{
+			"Url": "https://docs.microsoft.com/en-us/azure/key-vault/general/soft-delete-overview",
+			"Text": "Azure Key Vault soft-delete overview"
+		}
+	]
+}

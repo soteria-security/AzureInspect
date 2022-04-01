@@ -1,29 +1,25 @@
-function Inspect-BlobContext {
+function Inspect-KubernetesRBAC {
     Try {
-        $blobs = @()
+        $results = @()
         
-        $resourceGroups = (Get-AzResourceGroup).ResourceGroupName
+        $clusters = Get-AzAksCluster -WarningAction SilentlyContinue
 
-        Foreach ($resource in $resourceGroups){
-            $storageAccounts = Get-AzStorageAccount -ResourceGroupName $resource
-            $context = $storageAccounts.Context
-
-            Foreach ($account in $storageAccounts){
-                $blob = Get-AzStorageContainerAcl -Context $context | Where-Object {$_.PublicAccess -eq "Blob"}
-
+        Foreach ($cluster in $clusters){
+            If ($cluster.EnableRBAC -ne $true){
                 $result = New-Object psobject
-                $result | Add-Member -MemberType NoteProperty -name 'Resource Group' -Value $resource -ErrorAction SilentlyContinue
-                $result | Add-Member -MemberType NoteProperty -name 'Blob' -Value $blob.Name -ErrorAction SilentlyContinue
+                $result | Add-Member -MemberType NoteProperty -name 'Cluster' -Value $cluster.Name -ErrorAction SilentlyContinue
+                $result | Add-Member -MemberType NoteProperty -name 'Location' -Value $Cluster.Location -ErrorAction SilentlyContinue
+                $result | Add-Member -MemberType NoteProperty -name 'RBAC Enabled' -Value $cluster.EnableRBAC -ErrorAction SilentlyContinue
 
-                $blobs += $result
+                $results += $result
             }
         }
 
             
-        If ($blobs.Count -NE 0) {
+        If ($results.Count -NE 0) {
             $findings = @()
-            foreach ($x in $blobs) {
-                $findings += "Blob Name: $($x.Blob), Resource Group: $($x.'Resource Group')"
+            foreach ($x in $results){
+                $findings += "Cluster Name: $($x.Cluster), Location: $($x.Location), RBAC Enabled: $($x.'RBAC Enabled')"
             }
             return $findings
         }
@@ -47,4 +43,4 @@ function Inspect-BlobContext {
     }
 }
 
-return Inspect-BlobContext
+return Inspect-KubernetesRBAC
