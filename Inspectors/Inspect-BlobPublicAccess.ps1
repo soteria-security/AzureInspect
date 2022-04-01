@@ -1,6 +1,6 @@
 function Inspect-BlobContext {
     Try {
-        $blobs = @()
+        $containers = @()
         
         $resourceGroups = (Get-AzResourceGroup).ResourceGroupName
 
@@ -9,21 +9,24 @@ function Inspect-BlobContext {
             $context = $storageAccounts.Context
 
             Foreach ($account in $storageAccounts){
-                $blob = Get-AzStorageContainerAcl -Context $context | Where-Object {$_.PublicAccess -eq "Blob"}
+                $container = Get-AzStorageContainerAcl -Context $context | Where-Object {$_.PublicAccess -eq "Blob"}
 
-                $result = New-Object psobject
-                $result | Add-Member -MemberType NoteProperty -name 'Resource Group' -Value $resource -ErrorAction SilentlyContinue
-                $result | Add-Member -MemberType NoteProperty -name 'Blob' -Value $blob.Name -ErrorAction SilentlyContinue
+                foreach ($item in $container){
+                    $result = New-Object psobject
+                    $result | Add-Member -MemberType NoteProperty -name 'Resource Group' -Value $resource -ErrorAction SilentlyContinue
+                    $result | Add-Member -MemberType NoteProperty -name 'Container' -Value $item.Name -ErrorAction SilentlyContinue
+                    $result | Add-Member -MemberType NoteProperty -name 'PublicAccess' -Value $item.PublicAccess -ErrorAction SilentlyContinue
 
-                $blobs += $result
+                    $containers += $result
+                }
             }
         }
 
             
-        If ($blobs.Count -NE 0) {
+        If ($containers.Count -NE 0) {
             $findings = @()
-            foreach ($x in $blobs) {
-                $findings += "Blob Name: $($x.Blob), Resource Group: $($x.'Resource Group')"
+            foreach ($x in $containers) {
+                $findings += "Container Name: $($x.Container), Resource Group: $($x.'Resource Group'), Public Access Level: $($x.PublicAccess)"
             }
             return $findings
         }

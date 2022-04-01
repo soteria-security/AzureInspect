@@ -15,6 +15,7 @@ function Inspect-ContainerACL {
                     $result = New-Object psobject
                     $result | Add-Member -MemberType NoteProperty -name 'Resource Group' -Value $resource -ErrorAction SilentlyContinue
                     $result | Add-Member -MemberType NoteProperty -name 'Container' -Value $item.Name -ErrorAction SilentlyContinue
+                    $result | Add-Member -MemberType NoteProperty -name 'PublicAccess' -Value $item.PublicAccess -ErrorAction SilentlyContinue
 
                     $containers += $result
                 }
@@ -25,7 +26,7 @@ function Inspect-ContainerACL {
         If ($containers.Count -NE 0) {
             $findings = @()
             foreach ($x in $containers) {
-                $findings += "Container Name: $($x.Container), Resource Group: $($x.'Resource Group')"
+                $findings += "Container Name: $($x.Container), Resource Group: $($x.'Resource Group'), Public Access Level: $($x.PublicAccess)"
             }
             Return $findings
         }

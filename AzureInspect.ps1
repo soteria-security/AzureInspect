@@ -44,7 +44,8 @@ param (
 		IgnoreCase = $true)]
 	[string] $Auth,
 	[string[]] $SelectedInspectors = @(),
-	[string[]] $ExcludedInspectors = @()
+	[string[]] $ExcludedInspectors = @(),
+	[switch]$DoNotDisconnect
 )
 
 # Import script used for Error logging
@@ -376,10 +377,12 @@ function Disconnect {
 	Disconnect-AzAccount
 }
 
-$removeSession = Read-Host -Prompt "Do you wish to disconnect your session? (Y|N)"
+if (!$DoNotDisconnect){
+	$removeSession = Read-Host -Prompt "Do you wish to disconnect your session? (Y|N)"
 
-If ($removeSession -ne 'n'){
-	Disconnect
+	If ($removeSession -ne 'n'){
+		Disconnect
+	}
 }
 
 
