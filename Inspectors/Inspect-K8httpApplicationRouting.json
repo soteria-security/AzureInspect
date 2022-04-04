@@ -1,0 +1,25 @@
+{
+	"FindingName": "HTTP Application Routing Enabled on Kubernetes Clusters",
+	"Description": "HTTP application routing creates and configures an ingress controller and public DNS entries, allowing for easy access to applications deployed within the Kubernetes cluster, but lacks security controls and risks exposing applications and data to the internet.",
+	"Remediation": "Disable HTTP application routing on the identified clusters and if an ingress controller is required, create and leverage an HTTPS ingress controller following Microsoft's recommended practices.",
+	"Impact": "High",
+	"AffectedObjects": "",
+	"References": [
+        {
+            "Url": "https://docs.microsoft.com/en-us/azure/aks/intro-kubernetes",
+            "Text": "Azure Kubernetes Service"
+        },
+		{
+			"Url": "https://docs.microsoft.com/en-us/azure/aks/tutorial-kubernetes-deploy-cluster?tabs=azure-cli",
+			"Text": "Tutorial: Deploy an Azure Kubernetes Service (AKS) cluster"
+		},
+        {
+            "Url": "https://docs.microsoft.com/en-us/azure/aks/http-application-routing",
+            "Text": "HTTP application routing"
+        },
+        {
+            "Url": "https://docs.microsoft.com/en-us/azure/aks/ingress-tls?tabs=azure-cli",
+            "Text": "Create an HTTPS ingress controller on Azure Kubernetes Service (AKS)"
+        }
+	]
+}
