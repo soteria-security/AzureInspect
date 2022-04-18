@@ -162,6 +162,7 @@ If ($Auth -eq 'ALREADY_AUTHED'){
 	Confirm-InstalledModules
 }
 
+$subscriptions = Get-AzSubscription
 
 # Get a list of every available detection module by parsing the PowerShell
 # scripts present in the .\inspectors folder. 
