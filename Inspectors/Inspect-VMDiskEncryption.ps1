@@ -3,10 +3,22 @@ function Inspect-VMDiskEncryption {
         $results = @()
 
         foreach ($subscription in @($subscriptions)){
-            $vmDisks = Get-AzDisk | Select-Object Name, @{n="VirtualMachine";e={($_.ManagedBy).split('/')[-1]}}, @{n="EncryptionType";e={$_.Encryption.Type}} 
-            
-            foreach ($disk in $vmDisks){
-                $results += "Disk $($disk.Name) on VM $($disk.VirtualMachine) using encryption type $($disk.EncryptionType)"
+            $virtualMachines = Get-AzVM
+
+			foreach ($vm in $virtualMachines){
+				$vmDisks = Get-AzVMDiskEncryptionStatus -ResourceGroupName $vm.ResourceGroupName -VMName $vm.Name
+
+                foreach ($disk in $vmDisks){
+                    If (($disk.OsVolumeEncrypted -eq 'NotEncrypted') -and ($disk.DataVolumesEncrypted -eq 'NotEncrypted')){
+                        $results += "OS Volume and Data Volumes on VM $($vm.Name) are not encrypted."
+                    }
+                    ElseIf ($disk.OsVolumeEncrypted -eq 'NotEncrypted'){
+                        $results += "OS Volume on VM $($vm.Name) is not encrypted."
+                    }
+                    ElseIf ($disk.DataVolumesEncrypted -eq 'NotEncrypted'){
+                        $results += "Data Volumes on VM $($vm.Name) are not encrypted."
+                    }
+                }
             }
         }
 

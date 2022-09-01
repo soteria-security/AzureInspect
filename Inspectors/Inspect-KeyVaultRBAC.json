@@ -1,0 +1,17 @@
+{
+	"FindingName": "Azure Role-Based Access Controls (RBAC) Not Configured",
+	"Description": "Azure Role-Based Access Controls (RBAC) not configured on the identified key vaults. Azure RBAC roles provide a better experience for users and administrators, integrate with Azure Privileged Identity Management, and centralized access management for administrators. It is recommended to migrate from classic Vault Access Policies to Azure RBAC.",
+	"Remediation": "Determine the appropriate RBAC role assignments for users, or create custom roles as necessary and assign members to the roles. Enable RBAC on the key vault using the following method: Select Key Vault from the Azure Portal > click on \"Access policies\" tab > select the radio button corresponding to \"Azure role-based access control\".",
+	"Impact": "Informational",
+	"AffectedObjects": "",
+	"References": [
+		{
+			"Url": "https://techcommunity.microsoft.com/t5/azure/azure-key-vault-rbac-role-based-access-control-versus-access/m-p/2675089",
+			"Text": "Azure Key Vault RBAC (Role Based Access Control) versus Access Policies!"
+		},
+        {
+            "Url": "https://docs.microsoft.com/en-us/azure/key-vault/general/rbac-migration",
+            "Text": "Migrate from vault access policy to an Azure role-based access control permission model"
+        }
+	]
+}
