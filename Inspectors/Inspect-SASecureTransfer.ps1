@@ -1,4 +1,11 @@
-Function Inspect-SASecureTransfer {
+
+$ErrorActionPreference = "Stop"
+
+$errorHandling = "$((Get-Item $PSScriptRoot).Parent.FullName)\Write-ErrorLog.ps1"
+
+. $errorHandling
+
+function Inspect-SASecureTransfer {
     $storageAccounts = Get-AzStorageAccount
     $accounts = @()
 

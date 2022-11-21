@@ -1,3 +1,10 @@
+
+$ErrorActionPreference = "Stop"
+
+$errorHandling = "$((Get-Item $PSScriptRoot).Parent.FullName)\Write-ErrorLog.ps1"
+
+. $errorHandling
+
 function Inspect-SACrossTenantReplication {
 	Try {
 		$storageAccts_with_CTR = @()

@@ -5,17 +5,28 @@ $errorHandling = "$((Get-Item $PSScriptRoot).Parent.FullName)\Write-ErrorLog.ps1
 
 . $errorHandling
 
-function Inspect-SecurityContact {
+function Inspect-SubscriptionHijacking {
 	Try {
         $results = @()
 
         foreach ($subscription in @($subscriptions)){
-            $securityContacts = Get-AzSecurityContact 
+            $header = @{Authorization= "Bearer $((Get-AzAccessToken).token)"}
+            
+            $response = (Invoke-RestMethod -Uri 'https://management.azure.com/providers/Microsoft.Subscription/policies/default?api-version=2021-10-01' -Headers $header).Properties
+            
+            $results += "Subscription leaving AAD directory: $($response.blockSubscriptionsLeavingTenant)"
 
-            if ($null -eq $securityContacts){
-                $results +=  "No Security Contacts Defined for $($subscription.Name)"
+            $results += "Subscription entering AAD directory: $($response.blockSubscriptionsIntoTenant)"
+
+            if ($response.exemptedPrincipals) {
+                $results += "Exempted Users: $($response.exemptedPrincipals)"
+            }
+            Else {
+                $results += "Exempted Users: None"
             }
         }
+
+        return $results
 	}
 	Catch {
 		Write-Warning "Error message: $_"
@@ -34,4 +45,4 @@ function Inspect-SecurityContact {
 	}
 }
 
-return Inspect-SecurityContact
+return Inspect-SubscriptionHijacking

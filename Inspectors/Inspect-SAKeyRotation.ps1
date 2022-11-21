@@ -1,5 +1,12 @@
 
-Function Inspect-SAKeyRotation {
+
+$ErrorActionPreference = "Stop"
+
+$errorHandling = "$((Get-Item $PSScriptRoot).Parent.FullName)\Write-ErrorLog.ps1"
+
+. $errorHandling
+
+function Inspect-SAKeyRotation {
     $storageAccounts = Get-AzStorageAccount
     $accounts = @()
 

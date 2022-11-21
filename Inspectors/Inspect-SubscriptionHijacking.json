@@ -1,0 +1,29 @@
+{
+	"FindingName": "Subscription Hijacking Possible",
+	"Description": "Subscription hijacking involves attackers gaining access to the Azure environment and subscriptions and migrating them to attacker-controlled tenants. Performing the migration of a subscription between tenants retains the billing account information originally configured on the subscription, allowing the attacker access to sensitive account information. When a subscription is migrated to a different tenant, some resources are not transferred with the subscription. For example, all role assignments and custom roles in Azure role-based access control (Azure RBAC) are permanently deleted and legitimate users and administrators lose all access to the subscription and its resources.",
+	"Remediation": "Mitigation of these attacks can be accomplished by a combination of configuring Subscription Policies globally, Monitoring Subscription Owner and Global Administrator actions, and Conditional Access Policies.",
+    "Impact": "Critical",
+	"AffectedObjects": "",
+	"References": [
+		{
+			"Url": "https://microsoft.github.io/Azure-Threat-Research-Matrix/Persistence/AZT507/AZT507-3/",
+			"Text": "Azure Threat Research Matrix AZT507.3 - Subscription Hijack"
+		},
+        {
+			"Url": "https://learn.microsoft.com/en-us/azure/role-based-access-control/transfer-subscription",
+			"Text": "Transfer an Azure subscription to a different Azure AD directory"
+		},
+        {
+			"Url": "https://learn.microsoft.com/en-us/azure/cost-management-billing/manage/manage-azure-subscription-policy",
+			"Text": "Manage Azure subscription policies"
+		},
+        {
+			"Url": "https://learn.microsoft.com/en-us/azure/active-directory/conditional-access/concept-conditional-access-policy-common",
+			"Text": "Common Conditional Access Policies"
+		},
+        {
+			"Url": "https://learn.microsoft.com/en-us/azure/active-directory/conditional-access/concept-conditional-access-policies",
+			"Text": "Building a Conditional Access policy"
+		}
+	]
+}
