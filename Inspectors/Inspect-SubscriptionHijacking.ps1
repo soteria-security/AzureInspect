@@ -9,21 +9,19 @@ function Inspect-SubscriptionHijacking {
 	Try {
         $results = @()
 
-        foreach ($subscription in @($subscriptions)){
-            $header = @{Authorization= "Bearer $((Get-AzAccessToken).token)"}
-            
-            $response = (Invoke-RestMethod -Uri 'https://management.azure.com/providers/Microsoft.Subscription/policies/default?api-version=2021-10-01' -Headers $header).Properties
-            
-            $results += "Subscription leaving AAD directory: $($response.blockSubscriptionsLeavingTenant)"
+        $header = @{Authorization= "Bearer $((Get-AzAccessToken).token)"}
+        
+        $response = (Invoke-RestMethod -Uri 'https://management.azure.com/providers/Microsoft.Subscription/policies/default?api-version=2021-10-01' -Headers $header).Properties
+        
+        $results += "Subscription leaving AAD directory: $($response.blockSubscriptionsLeavingTenant)"
 
-            $results += "Subscription entering AAD directory: $($response.blockSubscriptionsIntoTenant)"
+        $results += "Subscription entering AAD directory: $($response.blockSubscriptionsIntoTenant)"
 
-            if ($response.exemptedPrincipals) {
-                $results += "Exempted Users: $($response.exemptedPrincipals)"
-            }
-            Else {
-                $results += "Exempted Users: None"
-            }
+        if ($response.exemptedPrincipals) {
+            $results += "Exempted Users: $($response.exemptedPrincipals)"
+        }
+        Else {
+            $results += "Exempted Users: None"
         }
 
         return $results
