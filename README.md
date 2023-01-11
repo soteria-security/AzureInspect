@@ -76,8 +76,10 @@ AzureInspect creates the directory specified in the out_path parameter. This dir
 
 AzureInspect can't run properly unless the Azure account you authenticate with has appropriate privileges. AzureInspect requires, at minimum, the following:
 
-* Subscription Owner Role per Subscription to be assessed
-* Global Reader
+Azure Roles:
+* Reader
+
+Azure Active Directory Roles:
 * Security Reader
 
 # Developing Inspector Modules
