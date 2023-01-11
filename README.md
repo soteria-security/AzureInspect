@@ -78,6 +78,7 @@ AzureInspect can't run properly unless the Azure account you authenticate with h
 
 Azure Roles:
 * Reader
+* Reader and Data Access - Required to allow the tool to query storage accounts
 
 Azure Active Directory Roles:
 * Security Reader
