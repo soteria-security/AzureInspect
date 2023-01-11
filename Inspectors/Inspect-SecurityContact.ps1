@@ -9,13 +9,12 @@ function Inspect-SecurityContact {
 	Try {
         $results = @()
 
-        foreach ($subscription in @($subscriptions)){
-            $securityContacts = Get-AzSecurityContact 
+        $securityContacts = Get-AzSecurityContact 
 
-            if ($null -eq $securityContacts){
-                $results +=  "No Security Contacts Defined for $($subscription.Name)"
-            }
+        if ($null -eq $securityContacts){
+            $results +=  "No Security Contacts Defined for $((Get-AZContext).Subscription.Name)"
         }
+
 	}
 	Catch {
 		Write-Warning "Error message: $_"

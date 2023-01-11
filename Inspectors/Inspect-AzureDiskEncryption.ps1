@@ -9,13 +9,11 @@ function Inspect-AzureDiskEncryption {
 	Try {
         $results = @()
 
-        foreach ($subscription in @($subscriptions)){
-            $vmDisks = Get-AzDisk | Select-Object Name, @{n="VirtualMachine";e={($_.ManagedBy).split('/')[-1]}}, @{n="EncryptionType";e={$_.Encryption.Type}} 
-            
-            foreach ($disk in $vmDisks){
-                If ($disk.EncryptionType -eq 'EncryptionAtRestWithPlatformKey'){
-                    $results += "Disk $($disk.Name) on VM $($disk.VirtualMachine) using encryption type $($disk.EncryptionType)"
-                }
+        $vmDisks = Get-AzDisk | Select-Object Name, @{n="VirtualMachine";e={($_.ManagedBy).split('/')[-1]}}, @{n="EncryptionType";e={$_.Encryption.Type}} 
+        
+        foreach ($disk in $vmDisks){
+            If ($disk.EncryptionType -eq 'EncryptionAtRestWithPlatformKey'){
+                $results += "Disk $($disk.Name) on VM $($disk.VirtualMachine) using encryption type $($disk.EncryptionType)"
             }
         }
 

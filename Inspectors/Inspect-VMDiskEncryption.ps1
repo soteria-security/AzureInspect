@@ -9,22 +9,20 @@ function Inspect-VMDiskEncryption {
 	Try {
         $results = @()
 
-        foreach ($subscription in @($subscriptions)){
-            $virtualMachines = Get-AzVM
+        $virtualMachines = Get-AzVM
 
-			foreach ($vm in $virtualMachines){
-				$vmDisks = Get-AzVMDiskEncryptionStatus -ResourceGroupName $vm.ResourceGroupName -VMName $vm.Name
+        foreach ($vm in $virtualMachines){
+            $vmDisks = Get-AzVMDiskEncryptionStatus -ResourceGroupName $vm.ResourceGroupName -VMName $vm.Name
 
-                foreach ($disk in $vmDisks){
-                    If (($disk.OsVolumeEncrypted -eq 'NotEncrypted') -and ($disk.DataVolumesEncrypted -eq 'NotEncrypted')){
-                        $results += "OS Volume and Data Volumes on VM $($vm.Name) are not encrypted."
-                    }
-                    ElseIf ($disk.OsVolumeEncrypted -eq 'NotEncrypted'){
-                        $results += "OS Volume on VM $($vm.Name) is not encrypted."
-                    }
-                    ElseIf ($disk.DataVolumesEncrypted -eq 'NotEncrypted'){
-                        $results += "Data Volumes on VM $($vm.Name) are not encrypted."
-                    }
+            foreach ($disk in $vmDisks){
+                If (($disk.OsVolumeEncrypted -eq 'NotEncrypted') -and ($disk.DataVolumesEncrypted -eq 'NotEncrypted')){
+                    $results += "OS Volume and Data Volumes on VM $($vm.Name) are not encrypted."
+                }
+                ElseIf ($disk.OsVolumeEncrypted -eq 'NotEncrypted'){
+                    $results += "OS Volume on VM $($vm.Name) is not encrypted."
+                }
+                ElseIf ($disk.DataVolumesEncrypted -eq 'NotEncrypted'){
+                    $results += "Data Volumes on VM $($vm.Name) are not encrypted."
                 }
             }
         }

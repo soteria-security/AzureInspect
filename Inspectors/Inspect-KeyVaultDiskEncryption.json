@@ -1,6 +1,6 @@
 {
-	"FindingName": "Virtual Machine Disks not Encrypted with Customer Managed Keys",
-	"Description": "Azure Disk Encryption for volume encryption is not enabled. When enabled, this configuration allows Azure Disk Encryption to retrieve secrets from the vault and unwrap keys enabling customers to manage their own encryption keys using server-side encryption. Customer managed keys offer greater flexibility to manage access controls.",
+	"FindingName": "Key Vaults not Encrypted with Customer Managed Keys",
+	"Description": "Azure Disk Encryption for volume encryption is not enabled. When enabled, this configuration allows Azure Disk Encryption to retrieve secrets from the vault and unwrap keys enabling customers to manage their own encryption keys using server-side encryption. Customer-managed keys offer greater flexibility to manage access controls.",
 	"Remediation": "Select Key Vault from the Azure Portal > click on \"Access policies\" tab > select the check box corresponding to \"Azure Disk Encryption for volume encryption\".",
 	"Impact": "Informational",
 	"AffectedObjects": "",
