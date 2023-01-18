@@ -77,11 +77,11 @@ AzureInspect creates the directory specified in the out_path parameter. This dir
 AzureInspect can't run properly unless the Azure account you authenticate with has appropriate privileges. AzureInspect requires, at minimum, the following:
 
 Azure Roles:
-* Reader
 * Reader and Data Access - Required to allow the tool to query storage accounts
 
 Azure Active Directory Roles:
 * Security Reader
+* Global Reader
 
 # Developing Inspector Modules
 
@@ -96,56 +96,97 @@ It is simple to create an inspector module. Inspectors have two files:
 
 The PowerShell and JSON file names must be identical for AzureInspect to recognize that the two belong together. There are numerous examples in AzureInspect's built-in suite of modules, but we'll put an example here too.
 
-Example .ps1 file, BypassingSafeAttachments.ps1:
+Example .ps1 file, Inspect-ContainerACL.ps1:
 ```
 # Define a function that we will later invoke.
 # AzureInspect's built-in modules all follow this pattern.
-function Inspect-BypassingSafeAttachments {
-	# Query some element of the Azure environment to inspect. Note that we did not have to authenticate to Exchange
-	# to fetch these transport rules within this module; assume main AzureInspect harness has logged us in already.
-	$safe_attachment_bypass_rules = (Get-TransportRule | Where { $_.SetHeaderName -eq "X-MS-Exchange-Organization-SkipSafeAttachmentProcessing" }).Identity
-	
-	# If some of the parsed Azure objects were found to have the security flaw this module is inspecting for,
-	# return a list of strings representing those objects. This is what will end up as the "Affected Objects"
-	# field in the report.
-	If ($safe_attachment_bypass_rules.Count -ne 0) {
-		return $safe_attachment_bypass_rules
-	}
-	
-	# If none of the parsed Azure objects were found to have the security flaw this module is inspecting for,
-	# returning $null indicates to AzureInspect that there were no findings for this module.
-	return $null
+$ErrorActionPreference = "Stop"
+
+$errorHandling = "$((Get-Item $PSScriptRoot).Parent.FullName)\Write-ErrorLog.ps1"
+
+. $errorHandling
+
+function Inspect-ContainerACL {
+    Try {
+        $containers = @()
+        
+        $resourceGroups = (Get-AzResourceGroup).ResourceGroupName
+
+        Foreach ($resource in $resourceGroups){
+            $storageAccounts = Get-AzStorageAccount -ResourceGroupName $resource
+            $context = $storageAccounts.Context
+
+            Foreach ($account in $storageAccounts){
+                $container = Get-AzStorageContainerAcl -Context $context | Where-Object {$_.PublicAccess -eq "Container"}
+                
+                foreach ($item in $container) {
+                    $result = New-Object psobject
+                    $result | Add-Member -MemberType NoteProperty -name 'Resource Group' -Value $resource -ErrorAction SilentlyContinue
+                    $result | Add-Member -MemberType NoteProperty -name 'Container' -Value $item.Name -ErrorAction SilentlyContinue
+                    $result | Add-Member -MemberType NoteProperty -name 'PublicAccess' -Value $item.PublicAccess -ErrorAction SilentlyContinue
+
+                    $containers += $result
+                }
+            }
+        }
+
+            
+        If ($containers.Count -NE 0) {
+            $findings = @()
+            foreach ($x in $containers) {
+                $findings += "Container Name: $($x.Container), Resource Group: $($x.'Resource Group'), Public Access Level: $($x.PublicAccess)"
+            }
+            Return $findings
+        }
+        
+        return $null
+    }
+    Catch {
+        Write-Warning "Error message: $_"
+    
+        $message = $_.ToString()
+        $exception = $_.Exception
+        $strace = $_.ScriptStackTrace
+        $failingline = $_.InvocationInfo.Line
+        $positionmsg = $_.InvocationInfo.PositionMessage
+        $pscommandpath = $_.InvocationInfo.PSCommandPath
+        $failinglinenumber = $_.InvocationInfo.ScriptLineNumber
+        $scriptname = $_.InvocationInfo.ScriptName
+        Write-Verbose "Write to log"
+        Write-ErrorLog -message $message -exception $exception -scriptname $scriptname -failinglinenumber $failinglinenumber -failingline $failingline -pscommandpath $pscommandpath -positionmsg $pscommandpath -stacktrace $strace
+        Write-Verbose "Errors written to log"
+    }
 }
 
-# Return the results of invoking the inspector function.
-return Inspect-BypassingSafeAttachments
+return Inspect-ContainerACL
 ```
 
-Example .json file, BypassingSafeAttachments.json:
+Example .json file, Inspect-ContainerACL.json:
 ```
 {
-	"FindingName": "Do Not Bypass the Safe Attachments Filter",
-	"Description": "In Exchange, it is possible to create mail transport rules that bypass the Safe Attachments detection capability. The rules listed above bypass the Safe Attachments capability. Consider reviewing these rules, as bypassing the Safe Attachments capability even for a subset of senders could be considered insecure depending on the context or may be an indicator of compromise.",
-	"Remediation": "Navigate to the Mail Flow -> Rules screen in the Exchange Admin Center. Look for the offending rules and begin the process of assessing who created them and whether they are necessary to the continued function of your organization. If they are not, remove the rules.",
+	"FindingName": "Containers allow public access",
+	"Description": "Public access allows for anonymous, public read access to a container and its blobs. The storage accounts context configuration specifies the level of public access to this container. By default, the container and any blobs in it can be accessed only by the owner of the storage account. To grant anonymous users read permissions to a container and its blobs, you can set the container permissions to enable public access. Anonymous users can read blobs in a publicly available container without authenticating the request.\nThe acceptable values for this parameter are:\n--Container. Provides full read access to a container and its blobs. Clients can enumerate blobs in the container through anonymous request, but cannot enumerate containers in the storage account.\n--Blob. Provides read access to blob data in a container through anonymous request, but does not provide access to container data. Clients cannot enumerate blobs in the container by using anonymous request.\n--Off. Restricts access to only the storage account owner.",
+	"Remediation": "Disable public access for storage accounts, unless it is a business requirement. If public access is required, monitor anonymous requests using Azure Metrics Explorer.\nTo change access levels:\nGo to \"Storage Accounts\" > select the affected storage account, select Containers under \"Data Storage\" > select the resources and select \"change access level\" at the top of the page > change the Public access level drop down to \"Private (no anonymous access)\"\nAlternatively, the following PowerShell commands can be run on each of the affected blobs:\nSet-AzStorageAccount -ResourceGroupName \"$ResourceGroupName\" -Name \"$StorageAccountName\" -AllowBlobPublicAccess $false",
+	"Impact": "High",
 	"AffectedObjects": "",
 	"References": [
 		{
-			"Url": "https://docs.microsoft.com/en-us/exchange/security-and-compliance/mail-flow-rules/manage-mail-flow-rules",
-			"Text": "Manage Mail Flow Rules in Exchange Online"
+			"Url": "https://docs.microsoft.com/en-us/azure/storage/blobs/anonymous-read-access-configure?tabs=powershell#set-the-public-access-level-for-a-container",
+			"Text": "Configure anonymous public read access for containers and blobs"
 		},
-		{
-			"Url": "https://www.undocumented-features.com/2018/05/10/atp-safe-attachments-safe-links-and-anti-phishing-policies-or-all-the-policies-you-can-shake-a-stick-at/#Bypass_Safe_Attachments_Processing",
-			"Text": "Undocumented Features: Safe Attachments, Safe Links, and Anti-Phishing Policies"
-		}
+        {
+            "Url":"https://docs.microsoft.com/en-us/azure/storage/blobs/anonymous-read-access-prevent",
+            "Text":"Prevent anonymous public read access to containers and blobs"
+        }
 	]
 }
 ```
 
 Once you drop these two files in the .\inspectors folder, they are considered part of AzureInspect's module inventory and will run the next time you execute AzureInspect.
 
-You have just created the BypassingSafeAttachments Inspector module. That's all!
+You have just created the Inspect-ContainerACL Inspector module. That's all!
 
-AzureInspect will throw a pretty loud and ugly error if something in your module doesn't work or doesn't follow AzureInspect conventions, so monitor the command line output.
+AzureInspect will log all errors if something in your module doesn't work or doesn't follow AzureInspect conventions, so monitor the command line output.
 
 # About Security
 
