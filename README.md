@@ -16,8 +16,6 @@ If you do not have these modules installed, you will be prompted to install them
 
 Once the modules are installed, download the AzureInspect source code folder from Github using your browser or by using *git clone*.
 
-As you will run AzureInspect with administrative privileges, you should place it in a logical location and make sure the contents of the folder are readable and writable only by the administrative user. This is especially important if you intend to install AzureInspect in a location where it will be executed frequently or used as part of an automated process.
-
 # Usage
 
 To run AzureInspect, open a PowerShell console and navigate to the folder you downloaded AzureInspect into:
@@ -195,7 +193,7 @@ AzureInspect will log all errors if something in your module doesn't work or doe
 
 # About Security
 
-AzureInspect is a script harness that runs other inspector script modules stored in the .\inspectors folder. As with any other script you may run with elevated privileges, you should observe certain security hygiene practices:
+AzureInspect is a script harness that runs other inspector script modules stored in the .\inspectors folder. As with any other script you may run, you should observe certain security hygiene practices:
 
 * No untrusted user should have write access to the AzureInspect folder/files, as that user could then overwrite scripts or templates therein and induce you to run malicious code.
 * No script module should be placed in .\inspectors unless you trust the source of that script module.
