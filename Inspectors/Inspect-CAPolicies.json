@@ -1,0 +1,30 @@
+{
+	"FindingName": "Azure Management Not Restricted by Conditional Access Policies",
+	"Description": "No Conditional Access policies were found that restrict access to Azure Management. This leaves the Tenant extremely vulnerable to various attacks.",
+	"Remediation": "Consider creating Conditional Access policies or re-enabling Secure Defaults. If the Tenant is not licensed for Conditional Access, consider enabling Secure Defaults.",
+	"DefaultValue" : "False",
+    "ExpectedValue" : "True",
+    "ReturnedValue" : "",
+    "Impact": "Critical",
+	"RiskRating" : "",
+    "AffectedObjects": "",
+	"Status" :  "",
+	"References": [
+		{
+			"Url": "https://docs.microsoft.com/en-us/azure/active-directory/conditional-access/overview",
+			"Text": "What is Conditional Access in Azure Active Directory?"
+		},
+		{
+			"Url": "https://docs.microsoft.com/en-us/azure/active-directory/conditional-access/concept-conditional-access-policy-common",
+			"Text": "Common Conditional Access Policies"
+		},
+		{
+			"Url": "https://learn.microsoft.com/en-us/azure/security/fundamentals/network-best-practices#adopt-a-zero-trust-approach",
+			"Text": "Adopt a Zero Trust approach"
+		},
+        {
+            "Url": "https://learn.microsoft.com/en-us/azure/active-directory/conditional-access/howto-conditional-access-policy-azure-management",
+            "Text": "Common Conditional Access policy: Require MFA for Azure management"
+        }
+	]
+}

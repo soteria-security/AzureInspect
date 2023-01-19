@@ -1,7 +1,7 @@
 {
 	"FindingName": "Subscription Hijacking Possible",
 	"Description": "Subscription hijacking involves attackers gaining access to the Azure environment and subscriptions and migrating them to attacker-controlled tenants. Performing the migration of a subscription between tenants retains the billing account information originally configured on the subscription, allowing the attacker access to sensitive account information. When a subscription is migrated to a different tenant, some resources are not transferred with the subscription. For example, all role assignments and custom roles in Azure role-based access control (Azure RBAC) are permanently deleted and legitimate users and administrators lose all access to the subscription and its resources.",
-	"Remediation": "Mitigation of these attacks can be accomplished by a combination of configuring Subscription Policies globally, Monitoring Subscription Owner and Global Administrator actions, and Conditional Access Policies.",
+	"Remediation": "Mitigation of these attacks can be accomplished by a combination of configuring Subscription Policies globally, Monitoring Subscription Owner and Global Administrator actions, and Conditional Access Policies. To configure Subscription Policies, navigate to the Azure Portal &rarr; Subscriptions &rarr; Manage Policies and select the appropriate options for the organization.",
     "Impact": "Critical",
 	"AffectedObjects": "",
 	"References": [

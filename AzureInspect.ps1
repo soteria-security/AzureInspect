@@ -38,14 +38,19 @@ param (
 	[Parameter(Mandatory = $true,
 		HelpMessage = 'Output path for report')]
 	[string] $OutPath,
+    [Parameter(Mandatory = $false,
+        HelpMessage = 'Skip Required Module Check')] #Intended for testing and troubleshooting purposes only!
+    [switch]$SkipModuleCheck,
 	[Parameter(Mandatory = $true,
 		HelpMessage = 'Auth type')]
 	[ValidateSet('ALREADY_AUTHED', 'MFA', 'DEVICE','APP',
 		IgnoreCase = $true)]
-	[string] $Auth,
+	[string] $Auth = "MFA",
 	[string[]] $SelectedInspectors = @(),
 	[string[]] $ExcludedInspectors = @(),
-	[switch]$DoNotDisconnect
+	[Parameter(Mandatory = $false,
+        HelpMessage = 'Do not disconnect at the end of the run')] #Intended for testing and troubleshooting purposes only!
+    [switch]$DoNotDisconnect
 )
 
 # Import script used for Error logging
@@ -63,17 +68,35 @@ Function Connect-Services{
 		If ($auth -EQ "MFA") {
 			Write-Output "Connecting to Azure Services"
 			Connect-AzAccount
+            # Connect to Microsoft Graph
+            Write-Output "Connecting to Microsoft Graph"
+            Connect-MgGraph -Scopes "AuditLog.Read.All","Policy.Read.All","Directory.Read.All","IdentityProvider.Read.All","Organization.Read.All","User.Read.All","UserAuthenticationMethod.Read.All"
+            Select-MgProfile -Name beta
+            Write-Output "Connected via Graph to $((Get-MgOrganization).DisplayName)"
 		}
         If ($auth -EQ "DEVICE") {
 			Write-Output "Connecting to Azure Services"
 			Connect-AzAccount -UseDeviceAuthentication
+            # Connect to Microsoft Graph
+            Write-Output "Connecting to Microsoft Graph"
+            Connect-MgGraph -Scopes "AuditLog.Read.All","Policy.Read.All","Directory.Read.All","IdentityProvider.Read.All","Organization.Read.All","User.Read.All","UserAuthenticationMethod.Read.All"
+            Select-MgProfile -Name beta
+            Write-Output "Connected via Graph to $((Get-MgOrganization).DisplayName)"
 		}
         If ($auth -EQ "APP") {
             $appID = Read-Host -Prompt "Enter the client/application Id"
             $thumbprint = Read-Host -Prompt "Enter the certificate thumbprint"
 			Write-Output "Connecting to Azure Services"
 			Connect-AzAccount -ApplicationId $appID -CertificateThumbprint $thumbprint
+            # Connect to Microsoft Graph
+            Write-Output "Connecting to Microsoft Graph"
+            Connect-MgGraph -ClientId $appID -TenantId $tenantID -CertificateThumbPrint $thumbprint | Out-Null
+            Select-MgProfile -Name beta
+            Write-Output "Connected via Graph to $((Get-MgOrganization).DisplayName)"
 		}
+
+        
+    	
 	}
 	Catch {
 		Write-Warning "Error message: $_"
@@ -169,7 +192,12 @@ If ($Auth -eq 'ALREADY_AUTHED'){
 	Connect-Services
 }Else{
 	# Start Script
-	Confirm-InstalledModules
+    If (! $SkipModuleCheck.IsPresent){
+	    Confirm-InstalledModules
+    }
+    Else {
+        Connect-Services
+    }
 }
 
 $subscriptions = Get-AzSubscription
@@ -306,8 +334,20 @@ Foreach ($subscription in $subscriptions){
                 $long_finding_html = $long_finding_html.Replace("{{FINDING_NUMBER}}", $findings_count.ToString())
                 
                 # Finding Impact
-                $short_finding_html = $short_finding_html.Replace("{{IMPACT}}", $finding.Impact)
-                $long_finding_html = $long_finding_html.Replace("{{IMPACT}}", $finding.Impact)
+                If ($finding.Impact -eq 'Critical'){
+                    $htmlImpact = '<span style="color:Crimson;"><strong>Critical</strong></span>'
+                    $short_finding_html = $short_finding_html.Replace("{{IMPACT}}", $htmlImpact)
+                    $long_finding_html = $long_finding_html.Replace("{{IMPACT}}", $htmlImpact)
+                }
+                ElseIf ($finding.Impact -eq 'High'){
+                    $htmlImpact = '<span style="color:DarkOrange;"><strong>High</strong></span>'
+                    $short_finding_html = $short_finding_html.Replace("{{IMPACT}}", $htmlImpact)
+                    $long_finding_html = $long_finding_html.Replace("{{IMPACT}}", $htmlImpact)
+                }
+                Else{
+                    $short_finding_html = $short_finding_html.Replace("{{IMPACT}}", $finding.Impact)
+                    $long_finding_html = $long_finding_html.Replace("{{IMPACT}}", $finding.Impact)
+                }
                 
                 # Finding description
                 $long_finding_html = $long_finding_html.Replace("{{DESCRIPTION}}", $finding.Description)

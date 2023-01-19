@@ -2,7 +2,7 @@
 	"FindingName": "Storage Account Access Keys Not Rotated",
 	"Description": "When you create a storage account, Azure generates two 512-bit storage account access keys for that account. These keys can be used to authorize access to data in your storage account via Shared Key authorization.\nYour storage account access keys are similar to a root password for your storage account. Always be careful to protect your access keys. Use Azure Key Vault to manage and rotate your keys securely. Avoid distributing access keys to other users, hard-coding them, or saving them anywhere in plain text that is accessible to others.",
 	"Remediation": "Microsoft recommends that you use Azure Key Vault to manage your access keys, and that you regularly rotate and regenerate your keys. Using Azure Key Vault makes it easy to rotate your keys without interruption to your applications. You can also manually rotate your keys using any of the methods linked below.\nAll keys can be immediately rotated using the following PowerShell command: $storageAccounts = Get-AzStorageAccount; foreach ($sa in $storageAccounts){$keys = Get-AzStorageAccountKey -Name $sa.StorageAccountName -ResourceGroupName $sa.ResourceGroupName; foreach ($key in $keys){New-AzStorageAccountKey -ResourceGroupName $sa.ResourceGroupName -Name $sa.StorageAccountName -KeyName $key.KeyName}}",
-	"Impact": "Critcal",
+	"Impact": "Critical",
 	"AffectedObjects": "",
 	"References": [
 		{
