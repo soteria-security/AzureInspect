@@ -1,0 +1,25 @@
+{
+	"FindingName": "Storage Account Access Keys Do Not Have an Expiration Period",
+	"Description": "When you create a storage account, Azure generates two 512-bit storage account access keys for that account. These keys can be used to authorize access to data in your storage account via Shared Key authorization.\nYour storage account access keys are similar to a root password for your storage account. Always be careful to protect your access keys. Use Azure Key Vault to manage and rotate your keys securely. Avoid distributing access keys to other users, hard-coding them, or saving them anywhere in plain text that is accessible to others.",
+	"Remediation": "Microsoft recommends that you use Azure Key Vault to manage your access keys, and that you regularly rotate and regenerate your keys. Using Azure Key Vault makes it easy to rotate your keys without interruption to your applications. You can also manually rotate your keys using any of the methods linked below.\nAll keys can be immediately rotated using the following PowerShell command: $storageAccounts = Get-AzStorageAccount; foreach ($sa in $storageAccounts){$keys = Get-AzStorageAccountKey -Name $sa.StorageAccountName -ResourceGroupName $sa.ResourceGroupName; foreach ($key in $keys){New-AzStorageAccountKey -ResourceGroupName $sa.ResourceGroupName -Name $sa.StorageAccountName -KeyName $key.KeyName}}",
+	"Impact": "Critical",
+	"AffectedObjects": "",
+	"References": [
+		{
+			"Url": "https://docs.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage?toc=%2Fazure%2Fstorage%2Fblobs%2Ftoc.json&tabs=azure-portal",
+			"Text": "Manage storage account access keys"
+		},
+        {
+			"Url": "https://docs.microsoft.com/en-us/azure/key-vault/secrets/overview-storage-keys-powershell",
+			"Text": "Manage storage account keys with Key Vault and Azure PowerShell"
+		},
+        {
+			"Url": "https://docs.microsoft.com/en-us/azure/key-vault/secrets/overview-storage-keys",
+			"Text": "Manage storage account keys with Key Vault and the Azure CLI"
+		},
+		{
+			"Url": "https://learn.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage?tabs=azure-powershell#create-a-key-expiration-policy",
+			"Text": "Create a key expiration policy"
+		}
+	]
+}
