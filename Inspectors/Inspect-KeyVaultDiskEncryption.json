@@ -1,17 +1,17 @@
 {
-	"FindingName": "Key Vaults not Encrypted with Customer Managed Keys",
-	"Description": "Azure Disk Encryption for volume encryption is not enabled. When enabled, this configuration allows Azure Disk Encryption to retrieve secrets from the vault and unwrap keys enabling customers to manage their own encryption keys using server-side encryption. Customer-managed keys offer greater flexibility to manage access controls.",
-	"Remediation": "Select Key Vault from the Azure Portal > click on \"Access policies\" tab > select the check box corresponding to \"Azure Disk Encryption for volume encryption\".",
-	"Impact": "Informational",
-	"AffectedObjects": "",
-	"References": [
-		{
-			"Url": "https://docs.microsoft.com/en-us/azure/virtual-machines/disk-encryption#customer-managed-keys",
-			"Text": "Server-side encryption of Azure Disk Storage"
-		},
+    "FindingName": "Key Vaults not Encrypted with Customer Managed Keys",
+    "Description": "Azure Disk Encryption for volume encryption is not enabled. When enabled, this configuration allows Azure Disk Encryption to retrieve secrets from the vault and unwrap keys enabling customers to manage their own encryption keys using server-side encryption. Customer-managed keys offer greater flexibility to manage access controls.",
+    "Remediation": "Select Key Vault from the Azure Portal&rarr;click on \"Access policies\" tab&rarr;select the check box corresponding to \"Azure Disk Encryption for volume encryption\".",
+    "Impact": "Informational",
+    "AffectedObjects": "",
+    "References": [
+        {
+            "Url": "https://docs.microsoft.com/en-us/azure/virtual-machines/disk-encryption#customer-managed-keys",
+            "Text": "Server-side encryption of Azure Disk Storage"
+        },
         {
             "Url": "https://docs.microsoft.com/en-us/azure/virtual-machines/disks-enable-customer-managed-keys-portal",
             "Text": "Use the Azure portal to enable server-side encryption with customer-managed keys for managed disks"
         }
-	]
+    ]
 }

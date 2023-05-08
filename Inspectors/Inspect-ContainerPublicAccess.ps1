@@ -11,12 +11,17 @@ function Inspect-ContainerACL {
         
         $resourceGroups = (Get-AzResourceGroup).ResourceGroupName
 
-        Foreach ($resource in $resourceGroups){
+        Foreach ($resource in $resourceGroups) {
             $storageAccounts = Get-AzStorageAccount -ResourceGroupName $resource
-            $context = $storageAccounts.Context
+            #$context = $storageAccounts.Context
 
-            Foreach ($account in $storageAccounts){
-                $container = Get-AzStorageContainerAcl -Context $context | Where-Object {$_.PublicAccess -eq "Container"}
+            Foreach ($account in $storageAccounts) {
+                Try {
+                    $container = Get-AzStorageContainerAcl -Context $account.Context -ErrorAction Stop | Where-Object { $_.PublicAccess -eq "Container" }
+                }
+                Catch {
+
+                }
                 
                 foreach ($item in $container) {
                     $result = New-Object psobject

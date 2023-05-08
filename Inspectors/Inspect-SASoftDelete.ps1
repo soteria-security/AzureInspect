@@ -11,12 +11,17 @@ function Inspect-SASoftDelete {
         
         $resourceGroups = (Get-AzResourceGroup).ResourceGroupName
 
-        Foreach ($resource in $resourceGroups){
+        Foreach ($resource in $resourceGroups) {
             $storageAccounts = Get-AzStorageAccount -ResourceGroupName $resource
-            $context = $storageAccounts.Context
+            #$context = $storageAccounts.Context
 
-            Foreach ($account in $storageAccounts){
-                $container = Get-AzStorageServiceProperty -ServiceType Blob -Context $context | Where-Object {$_.DeleteRetentionPolicy.Enabled -eq $false}
+            Foreach ($account in $storageAccounts) {
+                Try {
+                    $container = Get-AzStorageServiceProperty -ServiceType Blob -Context $account.Context -ErrorAction Stop | Where-Object { $_.DeleteRetentionPolicy.Enabled -eq $false }
+                }
+                Catch {
+                    
+                }
                 
                 foreach ($item in $container) {
                     $result = New-Object psobject

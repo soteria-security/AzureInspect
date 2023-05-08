@@ -1,21 +1,21 @@
 {
-	"FindingName": "Logging Not Enabled on Key Vaults",
-	"Description": "Logging is not enabled on the identified Key Vaults. Logging should be enabled on all Key Vaults to track access and changes to keys, secrets, and certificates.",
-	"Remediation": "Select Key Vault from the Azure Portal > click on \"Diagnostic settings\" under Monitoring > select \"Add diagnostic setting\" > select the log types and destination details of your choice and select \"Save\".",
-	"Impact": "Critical",
-	"AffectedObjects": "",
-	"References": [
+    "FindingName": "Logging Not Enabled on Key Vaults",
+    "Description": "Logging is not enabled on the identified Key Vaults. Logging should be enabled on all Key Vaults to track access and changes to keys, secrets, and certificates.",
+    "Remediation": "Select Key Vault from the Azure Portal&rarr;click on \"Diagnostic settings\" under Monitoring&rarr;select \"Add diagnostic setting\"&rarr;select the log types and destination details of your choice and select \"Save\".",
+    "Impact": "Critical",
+    "AffectedObjects": "",
+    "References": [
         {
-            "Url":"https://docs.microsoft.com/en-us/azure/key-vault/general/best-practices",
+            "Url": "https://docs.microsoft.com/en-us/azure/key-vault/general/best-practices",
             "Text": "Best practices for using Azure Key Vault"
         },
-		{
-			"Url": "https://docs.microsoft.com/en-us/azure/key-vault/general/logging?tabs=Vault",
-			"Text": "Azure Key Vault logging"
-		},
-		{
-			"Url":"https://docs.microsoft.com/en-us/azure/key-vault/general/howto-logging?tabs=azure-cli",
-			"Text":"Enable Key Vault logging"
-		}
-	]
+        {
+            "Url": "https://docs.microsoft.com/en-us/azure/key-vault/general/logging?tabs=Vault",
+            "Text": "Azure Key Vault logging"
+        },
+        {
+            "Url": "https://docs.microsoft.com/en-us/azure/key-vault/general/howto-logging?tabs=azure-cli",
+            "Text": "Enable Key Vault logging"
+        }
+    ]
 }

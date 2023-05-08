@@ -1,0 +1,17 @@
+{
+    "FindingName": "Azure Cache for Redis Non-SSL Ports Configured",
+    "Description": "Azure Cache for Redis, unlike Redis server, natively supports TLS. By default, non-SSL ports are disabled. Some Redis clients do not support TLS, leading to the non-default configuration returned in this finding. Although some clients do not work with TLS, it is possible to use a utility like stunnel to proxy the connection securely.",
+    "Remediation": "Validate the current configuration is expected and appropriate. If non-SSL ports are not necessary for day-to-day operations, it is recommended to disable the ability to use non-SSL ports.",
+    "Impact": "Medium",
+    "AffectedObjects": "",
+    "References": [
+        {
+            "Url": "https://learn.microsoft.com/en-us/azure/azure-cache-for-redis/cache-management-faq",
+            "Text": "Azure Cache for Redis management FAQs"
+        },
+        {
+            "Url": "https://learn.microsoft.com/en-us/azure/azure-cache-for-redis/cache-configure",
+            "Text": "How to configure Azure Cache for Redis"
+        }
+    ]
+}

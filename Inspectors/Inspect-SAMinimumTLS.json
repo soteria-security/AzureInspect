@@ -1,13 +1,13 @@
 {
-	"FindingName": "Storage Accounts Minimum TLS Version Less Than TLSv1.2",
-	"Description": "The identified Storage Accounts have configurations that allow insecure TLS versions. TLS 1.0 and 1.1 are susceptible to downgrade attacks and other vulnerabilities. All Storage Accounts should accept at a minimum TLS version 1.2.",
-	"Remediation": "Go to storage accounts > select the affected storage account > under the \"Minimum TLS version\", select Version 1.2, and save.",
-	"Impact": "Low",
-	"AffectedObjects": "",
-	"References": [
-		{
-			"Url": "https://docs.microsoft.com/en-us/azure/storage/common/transport-layer-security-configure-minimum-version?tabs=portal",
-			"Text": "Enforce a minimum required version of Transport Layer Security (TLS) for requests to a storage account"
-		}
-	]
+    "FindingName": "Storage Accounts Minimum TLS Version Less Than TLSv1.2",
+    "Description": "The identified Storage Accounts have configurations that allow insecure TLS versions. TLS 1.0 and 1.1 are susceptible to downgrade attacks and other vulnerabilities. All Storage Accounts should accept at a minimum TLS version 1.2.",
+    "Remediation": "Go to storage accounts&rarr;select the affected storage account&rarr;under the \"Minimum TLS version\", select Version 1.2, and save.",
+    "Impact": "Low",
+    "AffectedObjects": "",
+    "References": [
+        {
+            "Url": "https://docs.microsoft.com/en-us/azure/storage/common/transport-layer-security-configure-minimum-version?tabs=portal",
+            "Text": "Enforce a minimum required version of Transport Layer Security (TLS) for requests to a storage account"
+        }
+    ]
 }

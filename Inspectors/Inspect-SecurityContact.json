@@ -1,13 +1,13 @@
 {
-	"FindingName": "Security Contacts Not Set on Subscription",
-	"Description": "The identified subscriptions do not have Security Contacts set. Security contacts receive security alert notifications for events happening on the subscription.",
-	"Remediation": "Go to Subscriptions > select the identified subscription > select \"Security\" > select \"Environment settings\" > select the subscription > select \"Email notifications\" and configure the desired recipient(s). Additionally, the following PowerShell commands can configure this setting:\nSet-AzSecurityContact -Name \"MyPolicy\" -Email \"john@mytenant.com\" -Phone \"555-555-5555\" -AlertAdmin -NotifyOnAlert",
-	"Impact": "High",
-	"AffectedObjects": "",
-	"References": [
-		{
-			"Url": "https://docs.microsoft.com/en-us/azure/defender-for-cloud/configure-email-notifications",
-			"Text": "Configure email notifications for security alerts"
-		}
-	]
+    "FindingName": "Security Contacts Not Set on Subscription",
+    "Description": "The identified subscriptions do not have Security Contacts set. Security contacts receive security alert notifications for events happening on the subscription.",
+    "Remediation": "Go to Subscriptions&rarr;select the identified subscription&rarr;select \"Security\"&rarr;select \"Environment settings\"&rarr;select the subscription&rarr;select \"Email notifications\" and configure the desired recipient(s). Additionally, the following PowerShell commands can configure this setting:\nSet-AzSecurityContact -Name \"MyPolicy\" -Email \"john@mytenant.com\" -Phone \"555-555-5555\" -AlertAdmin -NotifyOnAlert",
+    "Impact": "High",
+    "AffectedObjects": "",
+    "References": [
+        {
+            "Url": "https://docs.microsoft.com/en-us/azure/defender-for-cloud/configure-email-notifications",
+            "Text": "Configure email notifications for security alerts"
+        }
+    ]
 }

@@ -32,23 +32,23 @@
 
 
 param (
-	[Parameter(Mandatory = $true,
-		HelpMessage = 'Organization name')]
-	[string] $OrgName,
-	[Parameter(Mandatory = $true,
-		HelpMessage = 'Output path for report')]
-	[string] $OutPath,
+    [Parameter(Mandatory = $true,
+        HelpMessage = 'Organization name')]
+    [string] $OrgName,
+    [Parameter(Mandatory = $true,
+        HelpMessage = 'Output path for report')]
+    [string] $OutPath,
     [Parameter(Mandatory = $false,
         HelpMessage = 'Skip Required Module Check')] #Intended for testing and troubleshooting purposes only!
     [switch]$SkipModuleCheck,
-	[Parameter(Mandatory = $true,
-		HelpMessage = 'Auth type')]
-	[ValidateSet('ALREADY_AUTHED', 'MFA', 'DEVICE','APP',
-		IgnoreCase = $true)]
-	[string] $Auth = "MFA",
-	[string[]] $SelectedInspectors = @(),
-	[string[]] $ExcludedInspectors = @(),
-	[Parameter(Mandatory = $false,
+    [Parameter(Mandatory = $true,
+        HelpMessage = 'Auth type')]
+    [ValidateSet('ALREADY_AUTHED', 'MFA', 'DEVICE', 'APP',
+        IgnoreCase = $true)]
+    [string] $Auth = "MFA",
+    [string[]] $SelectedInspectors = @(),
+    [string[]] $ExcludedInspectors = @(),
+    [Parameter(Mandatory = $false,
         HelpMessage = 'Do not disconnect at the end of the run')] #Intended for testing and troubleshooting purposes only!
     [switch]$DoNotDisconnect
 )
@@ -62,110 +62,110 @@ $selected_inspectors = $SelectedInspectors
 $excluded_inspectors = $ExcludedInspectors
 
 
-Function Connect-Services{
+Function Connect-Services {
     Try {
-		# Log into the Azure service prior to the analysis.
-		If ($auth -EQ "MFA") {
-			Write-Output "Connecting to Azure Services"
-			Connect-AzAccount
+        # Log into the Azure service prior to the analysis.
+        If ($auth -EQ "MFA") {
+            Write-Output "Connecting to Azure Services"
+            Connect-AzAccount
             # Connect to Microsoft Graph
             Write-Output "Connecting to Microsoft Graph"
-            Connect-MgGraph -Scopes "AuditLog.Read.All","Policy.Read.All","Directory.Read.All","IdentityProvider.Read.All","Organization.Read.All","User.Read.All","UserAuthenticationMethod.Read.All"
+            Connect-MgGraph -Scopes "AuditLog.Read.All", "Policy.Read.All", "Directory.Read.All", "IdentityProvider.Read.All", "Organization.Read.All", "User.Read.All", "UserAuthenticationMethod.Read.All"
             Select-MgProfile -Name beta
             Write-Output "Connected via Graph to $((Get-MgOrganization).DisplayName)"
-		}
+        }
         If ($auth -EQ "DEVICE") {
-			Write-Output "Connecting to Azure Services"
-			Connect-AzAccount -UseDeviceAuthentication
+            Write-Output "Connecting to Azure Services"
+            Connect-AzAccount -UseDeviceAuthentication
             # Connect to Microsoft Graph
             Write-Output "Connecting to Microsoft Graph"
-            Connect-MgGraph -Scopes "AuditLog.Read.All","Policy.Read.All","Directory.Read.All","IdentityProvider.Read.All","Organization.Read.All","User.Read.All","UserAuthenticationMethod.Read.All"
+            Connect-MgGraph -Scopes "AuditLog.Read.All", "Policy.Read.All", "Directory.Read.All", "IdentityProvider.Read.All", "Organization.Read.All", "User.Read.All", "UserAuthenticationMethod.Read.All"
             Select-MgProfile -Name beta
             Write-Output "Connected via Graph to $((Get-MgOrganization).DisplayName)"
-		}
+        }
         If ($auth -EQ "APP") {
             $appID = Read-Host -Prompt "Enter the client/application Id"
             $thumbprint = Read-Host -Prompt "Enter the certificate thumbprint"
-			Write-Output "Connecting to Azure Services"
-			Connect-AzAccount -ApplicationId $appID -CertificateThumbprint $thumbprint
+            Write-Output "Connecting to Azure Services"
+            Connect-AzAccount -ApplicationId $appID -CertificateThumbprint $thumbprint
             # Connect to Microsoft Graph
             Write-Output "Connecting to Microsoft Graph"
             Connect-MgGraph -ClientId $appID -TenantId $tenantID -CertificateThumbPrint $thumbprint | Out-Null
             Select-MgProfile -Name beta
             Write-Output "Connected via Graph to $((Get-MgOrganization).DisplayName)"
-		}
+        }
 
         
     	
-	}
-	Catch {
-		Write-Warning "Error message: $_"
+    }
+    Catch {
+        Write-Warning "Error message: $_"
 	
-		$message = $_.ToString()
-		$exception = $_.Exception
-		$strace = $_.ScriptStackTrace
-		$failingline = $_.InvocationInfo.Line
-		$positionmsg = $_.InvocationInfo.PositionMessage
-		$pscommandpath = $_.InvocationInfo.PSCommandPath
-		$failinglinenumber = $_.InvocationInfo.ScriptLineNumber
-		$scriptname = $_.InvocationInfo.ScriptName
-		Write-Verbose "Write to log"
-		Write-ErrorLog -message $message -exception $exception -scriptname $scriptname -failinglinenumber $failinglinenumber -failingline $failingline -pscommandpath $pscommandpath -positionmsg $pscommandpath -stacktrace $strace
-		Write-Verbose "Errors written to log"
-	}
+        $message = $_.ToString()
+        $exception = $_.Exception
+        $strace = $_.ScriptStackTrace
+        $failingline = $_.InvocationInfo.Line
+        $positionmsg = $_.InvocationInfo.PositionMessage
+        $pscommandpath = $_.InvocationInfo.PSCommandPath
+        $failinglinenumber = $_.InvocationInfo.ScriptLineNumber
+        $scriptname = $_.InvocationInfo.ScriptName
+        Write-Verbose "Write to log"
+        Write-ErrorLog -message $message -exception $exception -scriptname $scriptname -failinglinenumber $failinglinenumber -failingline $failingline -pscommandpath $pscommandpath -positionmsg $pscommandpath -stacktrace $strace
+        Write-Verbose "Errors written to log"
+    }
 }
 
 # Function to change color of text on errors for specific messages
-Function Colorize($ForeGroundColor){
+Function Colorize($ForeGroundColor) {
     $color = $Host.UI.RawUI.ForegroundColor
     $Host.UI.RawUI.ForegroundColor = $ForeGroundColor
   
-    if ($args){
-      Write-Output $args
+    if ($args) {
+        Write-Output $args
     }
   
     $Host.UI.RawUI.ForegroundColor = $color
-  }
+}
 
 
-Function Confirm-Close{
+Function Confirm-Close {
     Read-Host "Press Enter to Exit"
     Exit
 }
 
-Function Confirm-InstalledModules{
+Function Confirm-InstalledModules {
     #Check for required Modules and prompt for install if missing
-    $modules = @("Az.Accounts","Az.Advisor","Az.Aks","Az.AnalysisServices","Az.ApiManagement","Az.AppConfiguration","Az.ApplicationInsights","Az.Attestation","Az.Automation","Az.Batch","Az.Billing","Az.Cdn","Az.CognitiveServices","Az.Compute","Az.ContainerInstance","Az.ContainerRegistry","Az.CosmosDB","Az.DataBoxEdge","Az.Databricks","Az.DataFactory","Az.DataLakeAnalytics","Az.DataLakeStore","Az.DataShare","Az.DeploymentManager","Az.DesktopVirtualization","Az.DevTestLabs","Az.Dns","Az.EventGrid","Az.EventHub","Az.FrontDoor","Az.Functions","Az.HDInsight","Az.HealthcareApis","Az.IotHub","Az.KeyVault","Az.Kusto","Az.LogicApp","Az.MachineLearning","Az.Maintenance","Az.ManagedServices","Az.MarketplaceOrdering","Az.Media","Az.Migrate","Az.Monitor","Az.Network","Az.NotificationHubs","Az.OperationalInsights","Az.PolicyInsights","Az.PowerBIEmbedded","Az.PrivateDns","Az.RecoveryServices","Az.RedisCache","Az.RedisEnterpriseCache","Az.Relay","Az.ResourceMover","Az.Resources","Az.Security","Az.SecurityInsights","Az.ServiceBus","Az.ServiceFabric","Az.SignalR","Az.Sql","Az.SqlVirtualMachine","Az.Storage","Az.StorageSync","Az.StreamAnalytics","Az.Support","Az.Tools.Migration","Az.TrafficManager","Az.Websites")
+    $modules = @("Az.Accounts", "Az.Advisor", "Az.Aks", "Az.AnalysisServices", "Az.ApiManagement", "Az.AppConfiguration", "Az.ApplicationInsights", "Az.Attestation", "Az.Automation", "Az.Batch", "Az.Billing", "Az.Cdn", "Az.CognitiveServices", "Az.Compute", "Az.ContainerInstance", "Az.ContainerRegistry", "Az.CosmosDB", "Az.DataBoxEdge", "Az.Databricks", "Az.DataFactory", "Az.DataLakeAnalytics", "Az.DataLakeStore", "Az.DataShare", "Az.DeploymentManager", "Az.DesktopVirtualization", "Az.DevTestLabs", "Az.Dns", "Az.EventGrid", "Az.EventHub", "Az.FrontDoor", "Az.Functions", "Az.HDInsight", "Az.HealthcareApis", "Az.IotHub", "Az.KeyVault", "Az.Kusto", "Az.LogicApp", "Az.MachineLearning", "Az.Maintenance", "Az.ManagedServices", "Az.MarketplaceOrdering", "Az.Media", "Az.Migrate", "Az.Monitor", "Az.Network", "Az.NotificationHubs", "Az.OperationalInsights", "Az.PolicyInsights", "Az.PowerBIEmbedded", "Az.PrivateDns", "Az.RecoveryServices", "Az.RedisCache", "Az.RedisEnterpriseCache", "Az.Relay", "Az.ResourceMover", "Az.Resources", "Az.Security", "Az.SecurityInsights", "Az.ServiceBus", "Az.ServiceFabric", "Az.SignalR", "Az.Sql", "Az.SqlVirtualMachine", "Az.Storage", "Az.StorageSync", "Az.StreamAnalytics", "Az.Support", "Az.Tools.Migration", "Az.TrafficManager", "Az.Websites")
     $count = 0
     $installed = Get-InstalledModule
 
-    foreach ($module in $modules){
-        if ($installed.Name -notcontains $module){
+    foreach ($module in $modules) {
+        if ($installed.Name -notcontains $module) {
             $message = Write-Output "`n$module is not installed."
             $message1 = Write-Output 'The required modules may be installed en masse by running "Install-Module -Name Az -Scope CurrentUser -Repository PSGallery -Force -Confirm:$false" in an elevated PowerShell window.'
             Colorize Red ($message)
             Colorize Yellow ($message1)
             $install = Read-Host -Prompt "Would you like to attempt installation of the individual modules now? (Y|N)"
             If ($install -eq 'y') {
-				Try{
-					Install-Module -Name $module -Scope CurrentUser -Repository PSGallery -Force -Confirm:$false
-					$count ++
-				}
-				Catch {
-					Write-Warning "Error message: $_"
+                Try {
+                    Install-Module -Name $module -Scope CurrentUser -Repository PSGallery -Force -Confirm:$false
+                    $count ++
+                }
+                Catch {
+                    Write-Warning "Error message: $_"
 				
-					$message = $_.ToString()
-					$exception = $_.Exception
-					$strace = $_.ScriptStackTrace
-					$failingline = $_.InvocationInfo.Line
-					$positionmsg = $_.InvocationInfo.PositionMessage
-					$pscommandpath = $_.InvocationInfo.PSCommandPath
-					$failinglinenumber = $_.InvocationInfo.ScriptLineNumber
-					$scriptname = $_.InvocationInfo.ScriptName
-					Write-Verbose "Write to log"
-					Write-ErrorLog -message $message -exception $exception -scriptname $scriptname -failinglinenumber $failinglinenumber -failingline $failingline -pscommandpath $pscommandpath -positionmsg $pscommandpath -stacktrace $strace
-					Write-Verbose "Errors written to log"
-				}	
+                    $message = $_.ToString()
+                    $exception = $_.Exception
+                    $strace = $_.ScriptStackTrace
+                    $failingline = $_.InvocationInfo.Line
+                    $positionmsg = $_.InvocationInfo.PositionMessage
+                    $pscommandpath = $_.InvocationInfo.PSCommandPath
+                    $failinglinenumber = $_.InvocationInfo.ScriptLineNumber
+                    $scriptname = $_.InvocationInfo.ScriptName
+                    Write-Verbose "Write to log"
+                    Write-ErrorLog -message $message -exception $exception -scriptname $scriptname -failinglinenumber $failinglinenumber -failingline $failingline -pscommandpath $pscommandpath -positionmsg $pscommandpath -stacktrace $strace
+                    Write-Verbose "Errors written to log"
+                }	
             }
         }
         Else {
@@ -174,7 +174,7 @@ Function Confirm-InstalledModules{
         }
     }
 
-    If ($count -lt $modules.Count){
+    If ($count -lt $modules.Count) {
         Write-Output ""
         Write-Output ""
         $message = Write-Output "Dependency checks failed. Please install all missing modules before running this script."
@@ -188,12 +188,13 @@ Function Confirm-InstalledModules{
 }
 
 
-If ($Auth -eq 'ALREADY_AUTHED'){
-	Connect-Services
-}Else{
-	# Start Script
-    If (! $SkipModuleCheck.IsPresent){
-	    Confirm-InstalledModules
+If ($Auth -eq 'ALREADY_AUTHED') {
+    Connect-Services
+}
+Else {
+    # Start Script
+    If (! $SkipModuleCheck.IsPresent) {
+        Confirm-InstalledModules
     }
     Else {
         Connect-Services
@@ -202,7 +203,7 @@ If ($Auth -eq 'ALREADY_AUTHED'){
 
 $subscriptions = Get-AzSubscription
 
-Foreach ($subscription in $subscriptions){
+Foreach ($subscription in $subscriptions) {
     # Create a subfolder for each subscription
     $path = "$out_path\Subscription_$($subscription.Name)"
 
@@ -213,8 +214,8 @@ Foreach ($subscription in $subscriptions){
     # Get a list of every available detection module by parsing the PowerShell
     # scripts present in the .\inspectors folder. 
     # Exclude specified Inspectors
-    If ($excluded_inspectors -and $excluded_inspectors.Count){
-        $excluded_inspectors = foreach ($inspector in $excluded_inspectors){"$inspector.ps1"}
+    If ($excluded_inspectors -and $excluded_inspectors.Count) {
+        $excluded_inspectors = foreach ($inspector in $excluded_inspectors) { "$inspector.ps1" }
         $inspectors = (Get-ChildItem .\inspectors\*.ps1 -exclude $excluded_inspectors).Name | ForEach-Object { ($_ -split ".ps1")[0] }
     }
     else {
@@ -224,14 +225,14 @@ Foreach ($subscription in $subscriptions){
     # Use Selected Inspectors
     If ($selected_inspectors -AND $selected_inspectors.Count) {
         "The following inspectors were selected for use: "
-        Foreach ($inspector in $selected_inspectors){
+        Foreach ($inspector in $selected_inspectors) {
             Write-Output $inspector
         }
     }
     elseif ($excluded_Inspectors -and $excluded_inspectors.Count) {
         $selected_inspectors = $inspectors
         Write-Output "Using inspectors:`n"
-        Foreach ($inspector in $inspectors){
+        Foreach ($inspector in $inspectors) {
             Write-Output $inspector
         }
     }
@@ -243,7 +244,7 @@ Foreach ($subscription in $subscriptions){
     # Create Output Directory if required
     Try {
         New-Item -ItemType Directory -Force -Path $path | Out-Null
-        If ((Test-Path $path) -eq $true){
+        If ((Test-Path $path) -eq $true) {
             $path = Resolve-Path $path
             Write-Output "$($path.Path) created successfully."
         }
@@ -315,7 +316,7 @@ Foreach ($subscription in $subscriptions){
         $findings_count = 0
 
         #$sortedFindings1 = $findings | Sort-Object {$_.FindingName}
-        $sortedFindings = $findings | Sort-Object {Switch -Regex ($_.Impact){'Critical' {1}	'High' {2}	'Medium' {3}	'Low' {4}	'Informational' {5}};$_.FindingName} 
+        $sortedFindings = $findings | Sort-Object { Switch -Regex ($_.Impact) { 'Critical' { 1 }	'High' { 2 }	'Medium' { 3 }	'Low' { 4 }	'Informational' { 5 } }; $_.FindingName } 
         ForEach ($finding in $sortedFindings) {
             # If the result from the inspector was not $null,
             # it identified a real finding that we must process.
@@ -334,17 +335,17 @@ Foreach ($subscription in $subscriptions){
                 $long_finding_html = $long_finding_html.Replace("{{FINDING_NUMBER}}", $findings_count.ToString())
                 
                 # Finding Impact
-                If ($finding.Impact -eq 'Critical'){
+                If ($finding.Impact -eq 'Critical') {
                     $htmlImpact = '<span style="color:Crimson;"><strong>Critical</strong></span>'
                     $short_finding_html = $short_finding_html.Replace("{{IMPACT}}", $htmlImpact)
                     $long_finding_html = $long_finding_html.Replace("{{IMPACT}}", $htmlImpact)
                 }
-                ElseIf ($finding.Impact -eq 'High'){
+                ElseIf ($finding.Impact -eq 'High') {
                     $htmlImpact = '<span style="color:DarkOrange;"><strong>High</strong></span>'
                     $short_finding_html = $short_finding_html.Replace("{{IMPACT}}", $htmlImpact)
                     $long_finding_html = $long_finding_html.Replace("{{IMPACT}}", $htmlImpact)
                 }
-                Else{
+                Else {
                     $short_finding_html = $short_finding_html.Replace("{{IMPACT}}", $finding.Impact)
                     $long_finding_html = $long_finding_html.Replace("{{IMPACT}}", $finding.Impact)
                 }
@@ -370,7 +371,7 @@ Foreach ($subscription in $subscriptions){
                     $condensed = $condensed.Replace("{name}", $finding.FindingName)
                     $affected_object_html = $templates.AffectedObjectsTemplate.Replace("{{AFFECTED_OBJECT}}", $condensed)
                     $fname = $finding.FindingName
-                    $finding.AffectedObjects | Out-File -FilePath $out_path\$fname
+                    $finding.AffectedObjects | Out-File -FilePath $path\$fname
                 }
                 Else {
                     $affected_object_html = ''
@@ -407,9 +408,9 @@ Foreach ($subscription in $subscriptions){
         $output = $output.Replace($templates.FindingLongTemplate, $long_findings_html)
         $output = $output.Replace($templates.ExecsumTemplate, $templates.ExecsumTemplate.Replace("{{CMDLINEFLAGS}}", $flags))
 
-        $output | Out-File -FilePath $path\Report_$($subscription.Name)_$(Get-Date -Format "yyyy-MM-dd_hh-mm-ss").html
+        $output | Out-File -FilePath "$path\Report_$($subscription.Name)_$(Get-Date -Format "yyyy-MM-dd_hh-mm-ss").html"
     }
-    Catch{
+    Catch {
         Write-Warning "Error message: $_"
     
         $message = $_.ToString()
@@ -426,24 +427,24 @@ Foreach ($subscription in $subscriptions){
     }
 }
 
-	$compress = @{
-		Path = $out_path
-		CompressionLevel = "Fastest"
-		DestinationPath = "$out_path\$($org_name)_Report.zip"
-	}
-	Compress-Archive @compress
+$compress = @{
+    Path             = $out_path
+    CompressionLevel = "Fastest"
+    DestinationPath  = "$out_path\$($org_name)_Report.zip"
+}
+Compress-Archive @compress
 
 function Disconnect {
-	Write-Output "Disconnect from Azure Services"
-	Disconnect-AzAccount
+    Write-Output "Disconnect from Azure Services"
+    Disconnect-AzAccount
 }
 
-if (!$DoNotDisconnect){
-	$removeSession = Read-Host -Prompt "Do you wish to disconnect your session? (Y|N)"
+if (!$DoNotDisconnect) {
+    $removeSession = Read-Host -Prompt "Do you wish to disconnect your session? (Y|N)"
 
-	If ($removeSession -ne 'n'){
-		Disconnect
-	}
+    If ($removeSession -ne 'n') {
+        Disconnect
+    }
 }
 
 

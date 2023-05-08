@@ -1,12 +1,13 @@
 {
-	"FindingName": "Logging Not Enabled for Storage Accounts",
-	"Description": "Logging for identified Storage Accounts is disabled. Logging access to containers and blobs and alerts should be configured to ensure proper access and receive notification of illicit permissions and actions. Azure storage logging can be configured for read, write, and delete requests for the blob, table, and queue services.",
-	"Impact": "Critical",
-	"AffectedObjects": "",
-	"References": [
-		{
-			"Url": "https://docs.microsoft.com/en-us/azure/storage/common/manage-storage-analytics-logs?tabs=azure-portal",
-			"Text": "Enable and manage Azure Storage Analytics logs (classic)"
-		}
-	]
+    "FindingName": "Logging Not Enabled for Storage Accounts",
+    "Description": "Logging for identified Storage Accounts is disabled. Logging access to containers and blobs and alerts should be configured to ensure proper access and receive notification of illicit permissions and actions. Azure storage logging can be configured for read, write, and delete requests for the blob, table, and queue services.",
+    "Remediation": "Navigate to the Azure Portal &rarr; Navigate to your storage account &rarr; Under \"Monitoring (Classic)\" select the \"Diagnostic settings (Classic)\" tab &rarr; toggle the \"Status\" setting to \"On\". Ensure that Read, Write, and Delete logging is enabled.",
+    "Impact": "Critical",
+    "AffectedObjects": "",
+    "References": [
+        {
+            "Url": "https://docs.microsoft.com/en-us/azure/storage/common/manage-storage-analytics-logs?tabs=azure-portal",
+            "Text": "Enable and manage Azure Storage Analytics logs (classic)"
+        }
+    ]
 }

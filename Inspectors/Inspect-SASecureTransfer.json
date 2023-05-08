@@ -1,7 +1,7 @@
 {
     "FindingName": "Secure Transfer Not Required on Storage Accounts",
     "Description": "The identified Storage Accounts do not require secure transfer. This is a non-default configuration. Secure transfer can be configured on storage accounts to accept requests from secure connections only by setting the Secure transfer required property for the storage account. When requiring secure transfer, any requests originating from an insecure connection are rejected. Microsoft recommends always requiring secure transfer for all storage accounts. When secure transfer is required, a call to an Azure Storage REST API operation must be made over the HTTPS protocol. Any request made over the HTTP protocol is rejected. By default, the Secure transfer required property is enabled when storage accounts are created.",
-    "Remediation": "Navigate to the Azure Portal >  Select Storage Accounts > Select one of the identified storage accounts > Under Settings, select Configuration > set the radio button for \"Secure transfer required\" to \"Enabled\".",
+    "Remediation": "Navigate to the Azure Portal&rarr; Select Storage Accounts&rarr;Select one of the identified storage accounts&rarr;Under Settings, select Configuration&rarr;set the radio button for \"Secure transfer required\" to \"Enabled\".",
     "Impact": "High",
     "AffectedObjects": "",
     "References": [

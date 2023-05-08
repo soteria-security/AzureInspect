@@ -1,16 +1,17 @@
 {
-	"FindingName": "Soft Delete Not Enabled for Storage Accounts",
-	"Description": "Soft delete for identified Storage Accounts is disabled. Soft delete allows you to recover an accidentally deleted containers and blobs for a specified amount of time. This prevents any accidental loss of data.",
-	"Impact": "Medium",
-	"AffectedObjects": "",
-	"References": [
-		{
-			"Url": "https://docs.microsoft.com/en-us/azure/storage/blobs/soft-delete-container-enable?tabs=azure-portal",
-			"Text": "Enable and manage soft delete for containers"
-		},
+    "FindingName": "Soft Delete Not Enabled for Storage Accounts",
+    "Description": "Soft delete for identified Storage Accounts is disabled. Soft delete allows you to recover an accidentally deleted containers and blobs for a specified amount of time. This prevents any accidental loss of data.",
+    "Remediation": "Navigate to the Azure Portal &rarr; Navigate to your storage account &rarr; click on \"Data Protection\" tab &rarr; check the box for \"Enable soft delete for blobs\" &rarr; enter a retention period in days. The recommended configuration for Soft Delete Retention is 90 days.",
+    "Impact": "Medium",
+    "AffectedObjects": "",
+    "References": [
         {
-			"Url": "https://docs.microsoft.com/en-us/azure/storage/blobs/soft-delete-blob-enable?tabs=azure-portal",
-			"Text": "Enable soft delete for blobs"
-		}
-	]
+            "Url": "https://docs.microsoft.com/en-us/azure/storage/blobs/soft-delete-container-enable?tabs=azure-portal",
+            "Text": "Enable and manage soft delete for containers"
+        },
+        {
+            "Url": "https://docs.microsoft.com/en-us/azure/storage/blobs/soft-delete-blob-enable?tabs=azure-portal",
+            "Text": "Enable soft delete for blobs"
+        }
+    ]
 }

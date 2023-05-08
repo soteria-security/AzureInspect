@@ -1,21 +1,21 @@
 {
-	"FindingName": "Role Based Access Not Enabled on Kubernetes Clusters",
-	"Description": "Use Role-Based Access Control (RBAC) to manage permissions in Kubernetes (K8s) Service Clusters and configure relevant authorization policies. Using RBAC provides granular access control to resources within Azure Kubernetes Services by assigning roles to users that allow or deny specific actions to resources.",
-	"Remediation": "Enabling RBAC on a Kubernetes cluster can only be done at the time of creation. To utilize RBAC on these clusters, the cluster must be recreated. Navigate to the Azure Portal and select Kubernetes Services > select “Add” and enter the cluster's configuration > select the \"Authentication\" tab and verify that \"Enable RBAC\" is set to \"Yes\"",
-	"Impact": "High",
-	"AffectedObjects": "",
-	"References": [
+    "FindingName": "Role Based Access Not Enabled on Kubernetes Clusters",
+    "Description": "Use Role-Based Access Control (RBAC) to manage permissions in Kubernetes (K8s) Service Clusters and configure relevant authorization policies. Using RBAC provides granular access control to resources within Azure Kubernetes Services by assigning roles to users that allow or deny specific actions to resources.",
+    "Remediation": "Enabling RBAC on a Kubernetes cluster can only be done at the time of creation. To utilize RBAC on these clusters, the cluster must be recreated. Navigate to the Azure Portal and select Kubernetes Services&rarr;select \"Add\" and enter the cluster's configuration&rarr;select the \"Authentication\" tab and verify that \"Enable RBAC\" is set to \"Yes\"",
+    "Impact": "High",
+    "AffectedObjects": "",
+    "References": [
         {
-            "Url":"https://docs.microsoft.com/en-us/azure/aks/intro-kubernetes",
+            "Url": "https://docs.microsoft.com/en-us/azure/aks/intro-kubernetes",
             "Text": "Azure Kubernetes Service"
         },
-		{
-			"Url": "https://docs.microsoft.com/en-us/azure/aks/tutorial-kubernetes-deploy-cluster?tabs=azure-cli",
-			"Text": "Tutorial: Deploy an Azure Kubernetes Service (AKS) cluster"
-		},
         {
-            "Url":"https://docs.microsoft.com/en-us/azure/aks/concepts-identity?WT.mc_id=Portal-Microsoft_Azure_Security#role-based-access-controls-rbac",
-            "Text":"Access and identity options for Azure Kubernetes Service (AKS)"
+            "Url": "https://docs.microsoft.com/en-us/azure/aks/tutorial-kubernetes-deploy-cluster?tabs=azure-cli",
+            "Text": "Tutorial: Deploy an Azure Kubernetes Service (AKS) cluster"
+        },
+        {
+            "Url": "https://docs.microsoft.com/en-us/azure/aks/concepts-identity?WT.mc_id=Portal-Microsoft_Azure_Security#role-based-access-controls-rbac",
+            "Text": "Access and identity options for Azure Kubernetes Service (AKS)"
         }
-	]
+    ]
 }

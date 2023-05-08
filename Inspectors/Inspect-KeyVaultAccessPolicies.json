@@ -1,17 +1,17 @@
 {
-	"FindingName": "Key Vault Access Policies - Direct User Assignment",
-	"Description": "User accounts were found to be directly assigned to key vault access policies. Azure RBAC roles provide a better experience for users and administrators, integrate with Azure Privileged Identity Management, and centralized access management for administrators. It is recommended to migrate from classic Vault Access Policies to Azure RBAC.",
-	"Remediation": "It is recommended, whenever possible, to assign group membership instead of direct assignment to resources. This allows administrators to reduce the amount of overhead when onboarding and offboarding accounts by changing group membership rather than removing an account from multiple locations and resources. Remediation can be accomplished by assigning a group membership or enabling RBAC controls.\nGroup Assignment: If necessary, create a new security group in Azure Active Directory and populate memberships of the appropriate user accounts. Select Key Vault from the Azure Portal > click on \"Access policies\" tab >  click on \"Add Access Policy\" > define the required permissions, select the appropriate group and authorized application > click \"Add\". Remove the direct user assignments.\nRBAC Controls: Select Key Vault from the Azure Portal > click on \"Access policies\" tab > select the radio button corresponding to \"Azure role-based access control\".",
-	"Impact": "Informational",
-	"AffectedObjects": "",
-	"References": [
-		{
-			"Url": "https://techcommunity.microsoft.com/t5/azure/azure-key-vault-rbac-role-based-access-control-versus-access/m-p/2675089",
-			"Text": "Azure Key Vault RBAC (Role Based Access Control) versus Access Policies!"
-		},
+    "FindingName": "Key Vault Access Policies - Direct User Assignment",
+    "Description": "User accounts were found to be directly assigned to key vault access policies. Azure RBAC roles provide a better experience for users and administrators, integrate with Azure Privileged Identity Management, and centralized access management for administrators. It is recommended to migrate from classic Vault Access Policies to Azure RBAC.",
+    "Remediation": "It is recommended, whenever possible, to assign group membership instead of direct assignment to resources. This allows administrators to reduce the amount of overhead when onboarding and offboarding accounts by changing group membership rather than removing an account from multiple locations and resources. Remediation can be accomplished by assigning a group membership or enabling RBAC controls.\nGroup Assignment: If necessary, create a new security group in Azure Active Directory and populate memberships of the appropriate user accounts. Select Key Vault from the Azure Portal&rarr;click on \"Access policies\" tab&rarr; click on \"Add Access Policy\"&rarr;define the required permissions, select the appropriate group and authorized application&rarr;click \"Add\". Remove the direct user assignments.\nRBAC Controls: Select Key Vault from the Azure Portal&rarr;click on \"Access policies\" tab&rarr;select the radio button corresponding to \"Azure role-based access control\".",
+    "Impact": "Informational",
+    "AffectedObjects": "",
+    "References": [
+        {
+            "Url": "https://techcommunity.microsoft.com/t5/azure/azure-key-vault-rbac-role-based-access-control-versus-access/m-p/2675089",
+            "Text": "Azure Key Vault RBAC (Role Based Access Control) versus Access Policies!"
+        },
         {
             "Url": "https://docs.microsoft.com/en-us/azure/key-vault/general/rbac-migration",
             "Text": "Migrate from vault access policy to an Azure role-based access control permission model"
         }
-	]
+    ]
 }

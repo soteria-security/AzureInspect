@@ -1,17 +1,17 @@
 {
-	"FindingName": "Soft Delete Not Enabled on Azure Key Vaults",
-	"Description": "Soft delete for key vault is disabled. Soft delete allows you to recover an accidentally deleted key vault for a specified amount of time. This prevents any accidental loss of secrets, certificates, and keys in the key vault. Microsoft has deprecated the ability to disable this configuration on new key vaults, but existing vaults may still be affected.",
-	"Remediation": "Select Key Vault from the Azure Portal > click on \"Properties\" tab > select the radio button corresponding to \"Enable soft delete\" > enter a retention period in days. The recommended configuration for Soft Delete Retention is 90 days.",
-	"Impact": "High",
-	"AffectedObjects": "",
-	"References": [
+    "FindingName": "Soft Delete Not Enabled on Azure Key Vaults",
+    "Description": "Soft delete for key vault is disabled. Soft delete allows you to recover an accidentally deleted key vault for a specified amount of time. This prevents any accidental loss of secrets, certificates, and keys in the key vault. Microsoft has deprecated the ability to disable this configuration on new key vaults, but existing vaults may still be affected.",
+    "Remediation": "Select Key Vault from the Azure Portal&rarr;click on \"Properties\" tab&rarr;select the radio button corresponding to \"Enable soft delete\"&rarr;enter a retention period in days. The recommended configuration for Soft Delete Retention is 90 days.",
+    "Impact": "High",
+    "AffectedObjects": "",
+    "References": [
         {
-            "Url":"https://docs.microsoft.com/en-us/azure/key-vault/general/soft-delete-change",
+            "Url": "https://docs.microsoft.com/en-us/azure/key-vault/general/soft-delete-change",
             "Text": "Soft-delete will be enabled on all key vaults"
         },
-		{
-			"Url": "https://docs.microsoft.com/en-us/azure/key-vault/general/soft-delete-overview",
-			"Text": "Azure Key Vault soft-delete overview"
-		}
-	]
+        {
+            "Url": "https://docs.microsoft.com/en-us/azure/key-vault/general/soft-delete-overview",
+            "Text": "Azure Key Vault soft-delete overview"
+        }
+    ]
 }

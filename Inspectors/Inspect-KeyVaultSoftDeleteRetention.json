@@ -1,17 +1,17 @@
 {
-	"FindingName": "Soft Delete Retention < 90 Days",
-	"Description": "Soft delete retention is set for less than 90 days. Soft delete allows you to recover an accidentally deleted key vault for a specified amount of time. This prevents any accidental loss of secrets, certificates, and keys in the key vault.",
-	"Remediation": "Select Key Vault from the Azure Portal > click on \"Properties\" tab > select the radio button corresponding to \"Enable soft delete\" > enter a retention period in days. The recommended configuration for Soft Delete Retention is 90 days, unless superseded by policy or regulatory requirements.",
-	"Impact": "Informational",
-	"AffectedObjects": "",
-	"References": [
+    "FindingName": "Soft Delete Retention Less than 90 Days",
+    "Description": "Soft delete retention is set for less than 90 days. Soft delete allows you to recover an accidentally deleted key vault for a specified amount of time. This prevents any accidental loss of secrets, certificates, and keys in the key vault.",
+    "Remediation": "Select Key Vault from the Azure Portal&rarr;click on \"Properties\" tab&rarr;select the radio button corresponding to \"Enable soft delete\"&rarr;enter a retention period in days. The recommended configuration for Soft Delete Retention is 90 days, unless superseded by policy or regulatory requirements.",
+    "Impact": "Informational",
+    "AffectedObjects": "",
+    "References": [
         {
-            "Url":"https://docs.microsoft.com/en-us/azure/key-vault/general/soft-delete-change",
+            "Url": "https://docs.microsoft.com/en-us/azure/key-vault/general/soft-delete-change",
             "Text": "Soft-delete will be enabled on all key vaults"
         },
-		{
-			"Url": "https://docs.microsoft.com/en-us/azure/key-vault/general/soft-delete-overview",
-			"Text": "Azure Key Vault soft-delete overview"
-		}
-	]
+        {
+            "Url": "https://docs.microsoft.com/en-us/azure/key-vault/general/soft-delete-overview",
+            "Text": "Azure Key Vault soft-delete overview"
+        }
+    ]
 }

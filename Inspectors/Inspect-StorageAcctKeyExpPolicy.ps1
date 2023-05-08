@@ -11,11 +11,11 @@ function Inspect-StorageAcctKeyExpPolicy {
         
         $resourceGroups = (Get-AzResourceGroup).ResourceGroupName
 
-        Foreach ($resource in $resourceGroups){
+        Foreach ($resource in $resourceGroups) {
             $storageAccounts = Get-AzStorageAccount -ResourceGroupName $resource
-            $context = $storageAccounts.Context
+            #$context = $storageAccounts.Context
 
-            Foreach ($account in $storageAccounts){
+            Foreach ($account in $storageAccounts) {
                 $sAcct = Get-AzStorageAccount -ResourceGroupName $resource -Name $account.StorageAccountName
 
                 If ($null -ne $sAcct.KeyPolicy) {
@@ -25,7 +25,7 @@ function Inspect-StorageAcctKeyExpPolicy {
 
                     $expiredKeys = @()
 
-                    foreach ($key in $keys){
+                    foreach ($key in $keys) {
                         $keyCreated = $key.CreationTime.ToShortDateString()
 
                         If ($keyCreated -ge ((Get-Date).AddDays(-$KeyExpirationPeriodInDays))) {
@@ -34,7 +34,7 @@ function Inspect-StorageAcctKeyExpPolicy {
                     }
 
                     $result = @{
-                        AccountName = $sAcct.StorageAccountName
+                        AccountName               = $sAcct.StorageAccountName
                         KeyExpirationPeriodInDays = $sAcct.KeyPolicy.KeyExpirationPeriodInDays
                     }
 

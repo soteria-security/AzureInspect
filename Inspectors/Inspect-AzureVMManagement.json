@@ -1,0 +1,17 @@
+{
+    "FindingName": "Users with 'Microsoft.Compute/virtualMachines/*' Permissions Found",
+    "Description": "Users with 'Microsoft.Compute/virtualMachines/*'permissions can create,delete, and modify virtual machines and their properties. These permissions can be abused to execute scripts or PowerShell commands on all virtual machines in the subscription.",
+    "Remediation": "Review the list of returned users and ensure the results are both appropriate and expected. Remove role assignments as necessary.",
+    "Impact": "Medium",
+    "AffectedObjects": "",
+    "References": [
+        {
+            "Url": "https://cloudbrothers.info/en/azure-attack-paths/#azure-vm-run-command-or-custom-script-execution",
+            "Text": "Azure VM Run Command or Custom Script execution"
+        },
+        {
+            "Url": "https://learn.microsoft.com/en-us/azure/templates/microsoft.compute/virtualmachines?pivots=deployment-language-bicep",
+            "Text": "Microsoft.Compute virtualMachines"
+        }
+    ]
+}

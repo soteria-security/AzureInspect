@@ -1,0 +1,21 @@
+{
+    "FindingName": "Users with RunCommand Permissions Found",
+    "Description": "Users with RunCommand permissions can execute scripts and PowerShell commands on virtual machines in scope of the role assignment they hold.",
+    "Remediation": "Review the list of returned users and ensure the results are both appropriate and expected. Restrict or remove role assignments as necessary.",
+    "Impact": "Medium",
+    "AffectedObjects": "",
+    "References": [
+        {
+            "Url": "https://cloudbrothers.info/en/azure-attack-paths/#azure-vm-run-command-or-custom-script-execution",
+            "Text": "Azure VM Run Command or Custom Script execution"
+        },
+        {
+            "Url": "https://learn.microsoft.com/en-us/azure/virtual-machines/run-command-overview",
+            "Text": "Run scripts in your VM by using Run Command"
+        },
+        {
+            "Url": "https://learn.microsoft.com/en-us/azure/virtual-machines/windows/run-command#limiting-access-to-run-command",
+            "Text": "Limiting access to Run Command"
+        }
+    ]
+}

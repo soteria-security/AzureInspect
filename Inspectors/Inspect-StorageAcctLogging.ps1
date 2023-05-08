@@ -11,12 +11,17 @@ function Inspect-StorageAcctLogging {
         
         $resourceGroups = (Get-AzResourceGroup).ResourceGroupName
 
-        Foreach ($resource in $resourceGroups){
+        Foreach ($resource in $resourceGroups) {
             $storageAccounts = Get-AzStorageAccount -ResourceGroupName $resource
-            $context = $storageAccounts.Context
+            #$context = $storageAccounts.Context
 
-            Foreach ($account in $storageAccounts){
-                $container = Get-AzStorageServiceProperty -ServiceType Blob -Context $context | Where-Object {$_.Logging.LoggingOperations -eq 'None'}
+            Foreach ($account in $storageAccounts) {
+                Try {
+                    $container = Get-AzStorageServiceProperty -ServiceType Blob -Context $account.Context | Where-Object { $_.Logging.LoggingOperations -eq 'None' }
+                }
+                Catch {
+
+                }
                 
                 foreach ($item in $container) {
                     $result = New-Object psobject

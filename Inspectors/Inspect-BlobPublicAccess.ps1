@@ -11,14 +11,19 @@ function Inspect-BlobContext {
         
         $resourceGroups = (Get-AzResourceGroup).ResourceGroupName
 
-        Foreach ($resource in $resourceGroups){
+        Foreach ($resource in $resourceGroups) {
             $storageAccounts = Get-AzStorageAccount -ResourceGroupName $resource
-            $context = $storageAccounts.Context
+            #$context = $storageAccounts.Context
 
-            Foreach ($account in $storageAccounts){
-                $container = Get-AzStorageContainerAcl -Context $context | Where-Object {$_.PublicAccess -eq "Blob"}
+            Foreach ($account in $storageAccounts) {
+                Try {
+                    $container = Get-AzStorageContainerAcl -Context $account.Context -ErrorAction Stop | Where-Object { $_.PublicAccess -eq "Blob" }
+                }
+                Catch {
 
-                foreach ($item in $container){
+                }
+
+                foreach ($item in $container) {
                     $result = New-Object psobject
                     $result | Add-Member -MemberType NoteProperty -name 'Resource Group' -Value $resource -ErrorAction SilentlyContinue
                     $result | Add-Member -MemberType NoteProperty -name 'Container' -Value $item.Name -ErrorAction SilentlyContinue

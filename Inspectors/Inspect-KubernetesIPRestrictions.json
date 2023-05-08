@@ -1,13 +1,13 @@
 {
-	"FindingName": "Kubernetes Services Management API Not Configured with Restricted Access",
-	"Description": "Kubernetes (K8s) management API server is currently not configured with restricted access for the affected resources. Configuring restricted access ensures that only applications from allowed networks, machines, or subnets can access the cluster.",
-	"Remediation": "For automated remediation: Go to Security Center > search for the finding name > select the affected resources > select “Quick fix logic”.\nTo manually configure authorized IP ranges, follow the steps in Secure access to the API server using authorized IP address ranges in Azure Kubernetes Service (AKS).\nIf your existing cluster uses a Basic SKU Load Balancer, you'll need to redeploy or migrate to a new AKS cluster using the Standard SKU Load Balancer as explained in Moving from a basic SKU load balancer to standard SKU. If you decide not to redeploy, and you want to move these clusters to the 'not applicable' tab, follow the steps in Create an exemption rule.",
-	"Impact": "High",
-	"AffectedObjects": "",
-	"References": [
+    "FindingName": "Kubernetes Services Management API Not Configured with Restricted Access",
+    "Description": "Kubernetes (K8s) management API server is currently not configured with restricted access for the affected resources. Configuring restricted access ensures that only applications from allowed networks, machines, or subnets can access the cluster.",
+    "Remediation": "For automated remediation: Go to Security Center&rarr;search for the finding name&rarr;select the affected resources&rarr;select \"Quick fix logic\".\nTo manually configure authorized IP ranges, follow the steps in Secure access to the API server using authorized IP address ranges in Azure Kubernetes Service (AKS).\nIf your existing cluster uses a Basic SKU Load Balancer, you'll need to redeploy or migrate to a new AKS cluster using the Standard SKU Load Balancer as explained in Moving from a basic SKU load balancer to standard SKU. If you decide not to redeploy, and you want to move these clusters to the 'not applicable' tab, follow the steps in Create an exemption rule.",
+    "Impact": "High",
+    "AffectedObjects": "",
+    "References": [
         {
-            "Url":"https://docs.microsoft.com/en-us/azure/aks/api-server-authorized-ip-ranges?WT.mc_id=Portal-Microsoft_Azure_Securit",
+            "Url": "https://docs.microsoft.com/en-us/azure/aks/api-server-authorized-ip-ranges?WT.mc_id=Portal-Microsoft_Azure_Securit",
             "Text": "Secure access to the API server using authorized IP address ranges in Azure Kubernetes Service (AKS)"
         }
-	]
+    ]
 }
