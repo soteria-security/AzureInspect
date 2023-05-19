@@ -1,0 +1,21 @@
+{
+    "FindingName": "Non-Default Network Security Group Firewall Rules Found",
+    "Description": "Non-default Network Security Group (NSG) firewall rules were found. As NSG rules are generally simple Block/Allow rules, there is potential for the rules to be misconfigured, overly permissive, or no longer necessary.",
+    "Remediation": "Review the results of this finding and determine if the rules are expected and appropriate. To remediate, go to Subscriptions&rarr;select the identified subscription&rarr;select the identified Resource Group &rarr; select  the identified resource &rarr; select \"Networking\" under the Settings heading &rarr; select the identified rule and choose whether to change the configuration or delete the rule.",
+    "Impact": "Informational",
+    "AffectedObjects": "",
+    "References": [
+        {
+            "Url": "https://learn.microsoft.com/en-us/azure/virtual-network/network-security-groups-overview",
+            "Text": "Network security groups"
+        },
+        {
+            "Url": "https://learn.microsoft.com/en-us/azure/virtual-network/network-security-group-how-it-works",
+            "Text": "How network security groups filter network traffic"
+        },
+        {
+            "Url": "https://www.opsramp.com/guides/azure-best-practices/azure-firewall-vs-nsg/",
+            "Text": "Azure Firewall vs NSG"
+        }
+    ]
+}
