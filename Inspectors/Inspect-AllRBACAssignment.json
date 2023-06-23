@@ -1,0 +1,17 @@
+{
+    "FindingName": "RBAC Roles Assigned at Subscription Scope",
+    "Description": "All members of Azure Role-based Access Control (RBAC) roles assigned to the individual resources were exported. Permissions of role members assigned at the subscription scope are inherited by all resources and resource groups by default. Inherited and explicit permissions are identified in the output.",
+    "Remediation": "Review existing assignments and action as necessary.",
+    "Impact": "Informational",
+    "AffectedObjects": "",
+    "References": [
+        {
+            "Url": "https://learn.microsoft.com/en-us/azure/role-based-access-control/role-assignments-remove",
+            "Text": "Remove Azure role assignments"
+        },
+        {
+            "Url": "https://learn.microsoft.com/en-us/azure/role-based-access-control/overview",
+            "Text": "What is Azure role-based access control (Azure RBAC)?"
+        }
+    ]
+}

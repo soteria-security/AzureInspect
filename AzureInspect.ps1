@@ -400,7 +400,7 @@ Foreach ($subscription in $subscriptions) {
 
         # Insert command line execution information. This is coupled kinda badly, as is the Affected Objects html.
         $flags = "<b>Prepared for organization:</b><br/>" + $org_name + "<br/><br/>"
-        $flags = $flags + "<b>Subscription Information</b>:<br/> <b>" + "</b> Subscription Name: <b>" + $subscription.Name + "</b> Subscription Name: <b>" + $subscription.Id + "</b>.<br/><br/>"
+        $flags = $flags + "<b>Subscription Information</b>:<br/> <b>" + "</b> Subscription Name: <b>" + $subscription.Name + "</b> Subscription ID: <b>" + $subscription.Id + "</b>.<br/><br/>"
         $flags = $flags + "<b>Stats</b>:<br/> <b>" + $findings_count + "</b> out of <b>" + $inspectors.Count + "</b> executed inspector modules identified possible opportunities for improvement in subscription <b>" + $subscription.Name + "</b>.<br/><br/>"  
         $flags = $flags + "<b>Inspector Modules Executed</b>:<br/>" + [String]::Join("<br/>", $selected_inspectors)
 
