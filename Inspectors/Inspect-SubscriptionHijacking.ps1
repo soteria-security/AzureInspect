@@ -11,8 +11,8 @@ function Inspect-SubscriptionHijacking {
 
         $header = @{Authorization= "Bearer $((Get-AzAccessToken).token)"}
         
-        $response = (Invoke-RestMethod -Uri 'https://management.azure.com/providers/Microsoft.Subscription/policies/default?api-version=2021-10-01' -Headers $header).Properties
-        
+        $response = (Invoke-RestMethod -Method Get -Uri 'https://management.azure.com/providers/Microsoft.Subscription/policies/default?api-version=2021-10-01' -Headers $header).Properties
+
         $leaveTenant = $($response.blockSubscriptionsLeavingTenant)
 
         $enterTenant = $($response.blockSubscriptionsIntoTenant)

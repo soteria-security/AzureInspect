@@ -133,35 +133,36 @@ function Inspect-CAPolicies {
 
                     $sessionControls = $policy.sessioncontrols
 
-                    $result = New-Object psobject
-                    $result | Add-Member -MemberType NoteProperty -name Name -Value $policy.DisplayName -ErrorAction SilentlyContinue
-                    $result | Add-Member -MemberType NoteProperty -name State -Value $policy.State -ErrorAction SilentlyContinue
-                    $result | Add-Member -MemberType NoteProperty -name IncludedApps -Value $IncludedApps -ErrorAction SilentlyContinue
-                    $result | Add-Member -MemberType NoteProperty -name ExcludedApps -Value $ExcludedApps -ErrorAction SilentlyContinue
-                    $result | Add-Member -MemberType NoteProperty -name IncludedUserActions -Value $policy.conditions.includeuseractions -ErrorAction SilentlyContinue
-                    $result | Add-Member -MemberType NoteProperty -name IncludedProtectionLevels -Value $policy.conditions.includeprotectionlevels -ErrorAction SilentlyContinue
-                    $result | Add-Member -MemberType NoteProperty -name IncludedUsers -Value $IncludedUsers -ErrorAction SilentlyContinue
-                    $result | Add-Member -MemberType NoteProperty -name ExcludedUsers -Value $ExcludedUsers -ErrorAction SilentlyContinue
-                    $result | Add-Member -MemberType NoteProperty -name IncludedGroups -Value $IncludedGroups -ErrorAction SilentlyContinue
-                    $result | Add-Member -MemberType NoteProperty -name ExcludedGroups -Value $ExcludedGroups -ErrorAction SilentlyContinue
-                    $result | Add-Member -MemberType NoteProperty -name IncludedRoles -Value $IncludedRoles -ErrorAction SilentlyContinue
-                    $result | Add-Member -MemberType NoteProperty -name ExcludedRoles -Value $ExcludedRoles -ErrorAction SilentlyContinue
-                    $result | Add-Member -MemberType NoteProperty -name IncludedPlatforms -Value $policy.conditions.platforms.includeplatforms -ErrorAction SilentlyContinue
-                    $result | Add-Member -MemberType NoteProperty -name ExcludedPlatforms -Value $policy.conditions.platforms.excludeplatforms -ErrorAction SilentlyContinue
-                    $result | Add-Member -MemberType NoteProperty -name IncludedLocations -Value $policy.conditions.locations.includelocations -ErrorAction SilentlyContinue
-                    $result | Add-Member -MemberType NoteProperty -name ExcludedLocations -Value $policy.conditions.locations.excludelocations -ErrorAction SilentlyContinue
-                    $result | Add-Member -MemberType NoteProperty -name IncludedSignInRisk -Value $policy.conditions.SignInRiskLevels -ErrorAction SilentlyContinue
-                    $result | Add-Member -MemberType NoteProperty -name ClientAppTypes -Value $policy.conditions.ClientAppTypes -ErrorAction SilentlyContinue
-                    $result | Add-Member -MemberType NoteProperty -name GrantConditions -Value $policy.grantcontrols.builtincontrols -ErrorAction SilentlyContinue
-                    $result | Add-Member -MemberType NoteProperty -name ApplicationRestrictions -Value $sessioncontrols.ApplicationEnforcedRestrictions -ErrorAction SilentlyContinue
-                    $result | Add-Member -MemberType NoteProperty -name CloudAppSecurity -Value $sessioncontrols.CloudAppSecurity -ErrorAction SilentlyContinue
-                    $result | Add-Member -MemberType NoteProperty -name SessionLifetime -Value $sessioncontrols.signinfrequency -ErrorAction SilentlyContinue
-                    $result | Add-Member -MemberType NoteProperty -name PersistentBrowser -Value $sessioncontrols.PersistentBrowser -ErrorAction SilentlyContinue
+                    $result = [PSCustomObject]@{
+                        Name = $policy.DisplayName
+                        State = $policy.State
+                        IncludedApps = $IncludedApps
+                        ExcludedApps = $ExcludedApps
+                        IncludedUserActions = $policy.conditions.includeuseractions
+                        IncludedProtectionLevels = $policy.conditions.includeprotectionlevels
+                        IncludedUsers = $IncludedUsers
+                        ExcludedUsers = $ExcludedUsers
+                        IncludedGroups = $IncludedGroups
+                        ExcludedGroups = $ExcludedGroups
+                        IncludedRoles = $IncludedRoles
+                        ExcludedRoles = $ExcludedRoles
+                        IncludedPlatforms = $policy.conditions.platforms.includeplatforms
+                        ExcludedPlatforms = $policy.conditions.platforms.excludeplatforms
+                        IncludedLocations = $policy.conditions.locations.includelocations
+                        ExcludedLocations = $policy.conditions.locations.excludelocations
+                        IncludedSignInRisk = $policy.conditions.SignInRiskLevels
+                        ClientAppTypes = $policy.conditions.ClientAppTypes
+                        GrantConditions = $policy.grantcontrols.builtincontrols
+                        ApplicationRestrictions = $sessioncontrols.ApplicationEnforcedRestrictions
+                        CloudAppSecurity = $sessioncontrols.CloudAppSecurity
+                        SessionLifetime = $sessioncontrols.signinfrequency
+                        PersistentBrowser = $sessioncontrols.PersistentBrowser
+                    }
 
-                    $result | Out-File -FilePath "$caPath\$($name)_Policy.json"
+                    $result | Convertto-Json -Depth 10 | Out-File -FilePath "$caPath\$($name)_Policy.json"
                 }
 
-                Return "Conditional Access Policies were exported for review"
+                Return $null
             }
         }
         Else {

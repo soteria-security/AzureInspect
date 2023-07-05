@@ -11,8 +11,8 @@ function Inspect-SASecureTransfer {
         $accounts = @()
 
         foreach ($sa in $storageAccounts){
-            if ($keyCreated -le $saCreated){
-                $accounts += "Storage Account: $($sa.StorageAccountName), Resource Group: $($sa.ResourceGroupName), Key Name: $($key.KeyName)"
+            if ($_.EnableHttpsTrafficOnly -eq $false){
+                $accounts += "Storage Account: $($sa.StorageAccountName), Resource Group: $($sa.ResourceGroupName)"
             }
         }
 

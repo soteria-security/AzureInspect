@@ -7,7 +7,7 @@ $errorHandling = "$((Get-Item $PSScriptRoot).Parent.FullName)\Write-ErrorLog.ps1
 
 function Inspect-AllRBACAssignment {
     Try {
-        $results = @()
+        $results = 0
 
         $allResources = Get-AzResource
 
@@ -47,13 +47,12 @@ function Inspect-AllRBACAssignment {
                     Permissions = ((Get-AzRoleDefinition -Id $member.RoleDefinitionId).Actions -join ",")
                 }
 
-                $results += $result
+                $results += 1
+                $result | Export-Csv -Path "$(@($path))\All_Resource_RBAC_Assignment.csv" -NoTypeInformation -Delimiter ';' -Append
             }
         }
 
-        $results | Export-Csv -Path "$(@($out_path))\All_Resource_RBAC_Assignment.csv" -NoTypeInformation
-
-        return "$(($results | Measure-Object).Count) affected objects identified. See supplemental document <i>All_Resource_RBAC_Assignment.csv</i> for additional details."
+        return "$results affected objects identified. See supplemental document <i>All_Resource_RBAC_Assignment.csv</i> for additional details."
     }
     Catch {
         Write-Warning "Error message: $_"

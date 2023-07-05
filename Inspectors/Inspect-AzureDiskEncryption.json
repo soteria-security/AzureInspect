@@ -1,7 +1,7 @@
 {
     "FindingName": "Virtual Machine Disks not Encrypted with Customer Managed Keys",
     "Description": "List of Azure disk encryption types on all current VM's ",
-    "Remediation": "Navigate to  the identified virtual machines individually → select \"Disks\" → select \"Encryption\" → select the disk(s) to encrypt → select or configure an Azure Key Vault to manage the disks encryption keys.",
+    "Remediation": "Navigate to  the identified virtual machines individually &rarr; select \"Disks\" &rarr; select \"Encryption\" &rarr; select the disk(s) to encrypt &rarr; select or configure an Azure Key Vault to manage the disks encryption keys.",
     "Impact": "Informational",
     "AffectedObjects": "",
     "References": [
