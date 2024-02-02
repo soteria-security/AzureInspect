@@ -1,10 +1,10 @@
 # Purpose
 
-Further the state of Azure security by authoring a PowerShell script that automates the security assessment of Microsoft Office Azure environments.
+Following in the steps of [365Inspect](https://github.com/soteria-security/365Inspect), [Soteria](https://soteria.io/) created AzureInspect to assist in furthering the state of Azure security by authoring a PowerShell script that automates the security assessment of Microsoft Azure environments.
 
 # Setup
 
-AzureInspect requires the administrative PowerShell modules for Azure administration. 
+AzureInspect requires the administrative PowerShell modules for Azure administration and the Microsoft Graph. 
 
 The AzureInspect.ps1 PowerShell script will validate the installed modules.
 
@@ -13,6 +13,12 @@ If you do not have these modules installed, you will be prompted to install them
 	Install-Module -Name Az -Scope CurrentUser -Repository PSGallery -Force -Confirm:$false
 
 [Install the Azure Az PowerShell module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-7.3.2)
+
+Install-Module -Name Microsoft.Graph -Scope CurrentUser -Repository PSGallery -Force -Confirm:$false
+and
+Install-Module -Name Microsoft.Graph.Beta -Scope CurrentUser -Repository PSGallery -Force -Confirm:$false
+
+[Install Microsoft Graph SDK](https://docs.microsoft.com/en-us/graph/powershell/installation)
 
 Once the modules are installed, download the AzureInspect source code folder from Github using your browser or by using *git clone*.
 
@@ -58,6 +64,7 @@ To break down the parameters further:
 	* *Auth DEVICE* will produce a Device Code in the terminal with instructions to navigate to https://microsoft.com/devicelogin and enter the code to authenticate the session. This is the recommended option to run AzureInspect.
 	* *Auth APP* will prompt for the Azure Active Directory registered application information necessary to run. Azure*Inspect* will use the application to perform the assessment in place of a user account. Ensure the correct permissions have been granted to the application prior to using this option. 
 	* *Auth ALREADY_AUTHED* instructs AzureInspect not to authenticate before scanning. This may be preferable if you are executing AzureInspect from a PowerShell prompt where you already have valid sessions for all of the described services, such as one where you have already executed AzureInspect.
+* *SkipModuleCheck* is a switch intended for testing purposes, but may be used to skip the function that checks for the required modules installation.
 * *SelectedInspectors* is the name or names of the inspector or inspectors you wish to run with AzureInspect. If multiple inspectors are selected they must be comma separated. Only the named inspectors will be run.
 * *ExcludedInspectors*  is the name or names of the inspector or inspectors you wish to prevent from running with AzureInspect. If multiple inspectors are selected they must be comma separated. All modules other included modules will be run.
 
