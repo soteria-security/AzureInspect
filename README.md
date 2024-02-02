@@ -15,7 +15,9 @@ If you do not have these modules installed, you will be prompted to install them
 [Install the Azure Az PowerShell module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-7.3.2)
 
     Install-Module -Name Microsoft.Graph -Scope CurrentUser -Repository PSGallery -Force -Confirm:$false
+
 and
+
     Install-Module -Name Microsoft.Graph.Beta -Scope CurrentUser -Repository PSGallery -Force -Confirm:$false
 
 [Install Microsoft Graph SDK](https://docs.microsoft.com/en-us/graph/powershell/installation)
