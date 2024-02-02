@@ -1,0 +1,17 @@
+{
+    "FindingName": "Subscription is not licensed for Microsoft Defender for App Services",
+    "Description": "Microsoft Defender for App Service enables threat detection for App Service providing threat intelligence, anomaly detection, and behavior analytics in the Microsoft Defender for Cloud. By default, Microsoft Defender for Cloud is not enabled for your App Service instances. Enabling the Defender security service for App Service instances allows for advanced security defense using threat detection capabilities provided by Microsoft Security Response Center.",
+    "Remediation": "Disable public access for storage accounts, unless it is a business requirement. If public access is required, monitor anonymous requests using Azure Metrics Explorer.\nTo change access levels:\nGo to \"Storage Accounts\"&rarr;select the affected storage account, select Containers under \"Data Storage\"&rarr;select the resources and select \"change access level\" at the top of the page&rarr;change the Public access level drop down to \"Private (no anonymous access)\"\nAlternatively, the following PowerShell commands can be run on each of the affected blobs:\nSet-AzStorageAccount -ResourceGroupName \"$ResourceGroupName\" -Name \"$StorageAccountName\" -AllowBlobPublicAccess $false",
+    "Impact": "High",
+    "AffectedObjects": "",
+    "References": [
+        {
+            "Url": "https://docs.microsoft.com/en-us/azure/storage/blobs/anonymous-read-access-configure?tabs=powershell#set-the-public-access-level-for-a-container",
+            "Text": "Configure anonymous public read access for containers and blobs"
+        },
+        {
+            "Url": "https://docs.microsoft.com/en-us/azure/storage/blobs/anonymous-read-access-prevent",
+            "Text": "Prevent anonymous public read access to containers and blobs"
+        }
+    ]
+}

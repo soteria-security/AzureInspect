@@ -71,7 +71,7 @@ Function Connect-Services {
             # Connect to Microsoft Graph
             Write-Output "Connecting to Microsoft Graph"
             Connect-MgGraph -Scopes "AuditLog.Read.All", "Policy.Read.All", "Directory.Read.All", "IdentityProvider.Read.All", "Organization.Read.All", "User.Read.All", "UserAuthenticationMethod.Read.All"
-            Select-MgProfile -Name beta
+            #Select-MgProfile -Name beta
             Write-Output "Connected via Graph to $((Get-MgOrganization).DisplayName)"
         }
         If ($auth -EQ "DEVICE") {
@@ -80,7 +80,7 @@ Function Connect-Services {
             # Connect to Microsoft Graph
             Write-Output "Connecting to Microsoft Graph"
             Connect-MgGraph -Scopes "AuditLog.Read.All", "Policy.Read.All", "Directory.Read.All", "IdentityProvider.Read.All", "Organization.Read.All", "User.Read.All", "UserAuthenticationMethod.Read.All"
-            Select-MgProfile -Name beta
+            #Select-MgProfile -Name beta
             Write-Output "Connected via Graph to $((Get-MgOrganization).DisplayName)"
         }
         If ($auth -EQ "APP") {
@@ -91,7 +91,7 @@ Function Connect-Services {
             # Connect to Microsoft Graph
             Write-Output "Connecting to Microsoft Graph"
             Connect-MgGraph -ClientId $appID -TenantId $tenantID -CertificateThumbPrint $thumbprint | Out-Null
-            Select-MgProfile -Name beta
+            #Select-MgProfile -Name beta
             Write-Output "Connected via Graph to $((Get-MgOrganization).DisplayName)"
         }
 
@@ -203,9 +203,13 @@ Else {
 
 $subscriptions = Get-AzSubscription
 
+$count = 0
+
 Foreach ($subscription in $subscriptions) {
+    $count += 1
     # Create a subfolder for each subscription
-    $path = "$out_path\Subscription_$($subscription.Name)"
+    #    $path = "$out_path\Subscription_$($subscription.Name)"
+    $path = "$out_path\Subscription_$($count)"
 
     # Set the context for the associated subscription
     Write-Output "Selecting subscription $($subscription.Name)"
@@ -408,7 +412,7 @@ Foreach ($subscription in $subscriptions) {
         $output = $output.Replace($templates.FindingLongTemplate, $long_findings_html)
         $output = $output.Replace($templates.ExecsumTemplate, $templates.ExecsumTemplate.Replace("{{CMDLINEFLAGS}}", $flags))
 
-        $output | Out-File -FilePath "$path\Report_$($subscription.Name)_$(Get-Date -Format "yyyy-MM-dd_hh-mm-ss").html"
+        $output | Out-File -FilePath "$path\Report_$($org_name)_Subscription$($count)_$(Get-Date -Format "yyyy-MM-dd_hh-mm-ss").html"
     }
     Catch {
         Write-Warning "Error message: $_"

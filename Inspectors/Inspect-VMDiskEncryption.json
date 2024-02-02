@@ -1,7 +1,7 @@
 {
     "FindingName": "Virtual Machine Disks not Encrypted",
     "Description": "List of Virtual machines with unencrypted disks and/or volumes.",
-    "Remediation": "Navigate to  the identified virtual machines individually &rarr; select \"Disks\" &rarr; select \"Encryption\" &rarr; select the disk(s) to encrypt &rarr; select or configure an Azure Key Vault to manage the disks encryption keys. -NotifyOnAlert",
+    "Remediation": "Navigate to  the identified virtual machines individually &rarr; select \"Disks\" &rarr; select \"Encryption\" &rarr; select the disk(s) to encrypt &rarr; select or configure an Azure Key Vault to manage the disks encryption keys.",
     "Impact": "Informational",
     "AffectedObjects": "",
     "References": [
