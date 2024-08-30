@@ -4,7 +4,7 @@ $errorHandling = "$((Get-Item $PSScriptRoot).Parent.FullName)\Write-ErrorLog.ps1
 
 . $errorHandling
 
-$path = "$(@($path))"
+$path = "$(@($subPath))"
 
 function Inspect-CAPolicies {
     Try {
@@ -63,7 +63,15 @@ function Inspect-CAPolicies {
                     }
                     Elseif ($policy.conditions.users.includeusers) {
                         Foreach ($id in ($policy.conditions.users.includeusers)) {
-                            $IncludedUsers += (Get-MgDirectoryObject -DirectoryObjectId $id).AdditionalProperties.displayName
+                            Try {
+                                $IncludedUsers += (Get-MgDirectoryObject -DirectoryObjectId $id -ErrorAction Stop).AdditionalProperties.displayName
+                            }
+                            Catch {
+                                $exception = $_.Exception.Message
+                                If ($exception -like "*404 (NotFound)*") {
+                                    $IncludedUsers += "$id - User may no lnger exist."
+                                }
+                            }
                         }
                     }
 
@@ -78,7 +86,15 @@ function Inspect-CAPolicies {
                     }
                     Elseif ($policy.conditions.users.excludeusers) {
                         Foreach ($id in ($policy.conditions.users.excludeusers)) {
-                            $ExcludedUsers += (Get-MgDirectoryObject -DirectoryObjectId $id).AdditionalProperties.displayName
+                            Try {
+                                $ExcludedUsers += (Get-MgDirectoryObject -DirectoryObjectId $id -ErrorAction Stop).AdditionalProperties.displayName
+                            }
+                            Catch {
+                                $exception = $_.Exception.Message
+                                If ($exception -like "*404 (NotFound)*") {
+                                    $ExcludedUsers += "$id - User may no lnger exist."
+                                }
+                            }
                         }
                     }
                     
@@ -87,7 +103,15 @@ function Inspect-CAPolicies {
                     }
                     Elseif ($policy.conditions.users.includegroups) {
                         Foreach ($id in ($policy.conditions.users.includegroups)) {
-                            $IncludedGroups = (Get-MgDirectoryObject -DirectoryObjectId $id).AdditionalProperties.displayName
+                            Try {
+                                $IncludedGroups = (Get-MgDirectoryObject -DirectoryObjectId $id -ErrorAction Stop).AdditionalProperties.displayName
+                            }
+                            Catch {
+                                $exception = $_.Exception.Message
+                                If ($exception -like "*404 (NotFound)*") {
+                                    $IncludedGroups += "$id - Group may no lnger exist."
+                                }
+                            }
                         }
                     }
                     
@@ -96,7 +120,15 @@ function Inspect-CAPolicies {
                     }
                     Elseif ($policy.conditions.users.excludegroups) {
                         Foreach ($id in ($policy.conditions.users.excludegroups)) {
-                            $ExcludedGroups = (Get-MgDirectoryObject -DirectoryObjectId $id).AdditionalProperties.displayName
+                            Try {
+                                $ExcludedGroups = (Get-MgDirectoryObject -DirectoryObjectId $id -ErrorAction Stop).AdditionalProperties.displayName
+                            }
+                            Catch {
+                                $exception = $_.Exception.Message
+                                If ($exception -like "*404 (NotFound)*") {
+                                    $ExcludedGroups += "$id - Group may no lnger exist."
+                                }
+                            }
                         }
                     }
                     
@@ -105,7 +137,15 @@ function Inspect-CAPolicies {
                     }
                     Elseif ($policy.conditions.users.includeroles) {
                         Foreach ($id in ($policy.conditions.users.includeroles)) {
-                            $IncludedRoles = (Get-MgDirectoryObject -DirectoryObjectId $id).AdditionalProperties.displayName
+                            Try {
+                                $IncludedRoles = (Get-MgDirectoryObject -DirectoryObjectId $id -ErrorAction Stop).AdditionalProperties.displayName
+                            }
+                            Catch {
+                                $exception = $_.Exception.Message
+                                If ($exception -like "*404 (NotFound)*") {
+                                    $IncludedRoles += "$id - Role may no lnger exist."
+                                }
+                            }
                         }
                     }
                     
@@ -114,7 +154,15 @@ function Inspect-CAPolicies {
                     }
                     Elseif ($policy.conditions.users.excluderoles) {
                         Foreach ($id in ($policy.conditions.users.excluderoles)) {
-                            $ExcludedRoles = (Get-MgDirectoryObject -DirectoryObjectId $id).AdditionalProperties.displayName
+                            Try {
+                                $ExcludedRoles = (Get-MgDirectoryObject -DirectoryObjectId $id -ErrorAction Stop).AdditionalProperties.displayName
+                            }
+                            Catch {
+                                $exception = $_.Exception.Message
+                                If ($exception -like "*404 (NotFound)*") {
+                                    $ExcludedRoles += "$id - Role may no lnger exist."
+                                }
+                            }
                         }
                     }
 

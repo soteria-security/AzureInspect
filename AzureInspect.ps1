@@ -88,6 +88,14 @@ Function Connect-Services {
             Connect-MgGraph -Scopes "AuditLog.Read.All", "Policy.Read.All", "Directory.Read.All", "IdentityProvider.Read.All", "Organization.Read.All", "User.Read.All", "UserAuthenticationMethod.Read.All"
             #Select-MgProfile -Name beta
             Write-Output "Connected via Graph to $((Get-MgOrganization).DisplayName)"
+
+            # Elevate Access to read Subscription Policies
+            Try {
+                Invoke-RestMethod -Method Post -Uri "https://management.azure.com/providers/Microsoft.Authorization/elevateAccess?api-version=2016-07-01" -Headers @{Authorization = "Bearer $((Get-AzAccessToken).Token)" }
+            }
+            Catch {
+                Write-Host "Error. Manual elevation required."
+            }
         }
         If ($auth -EQ "DEVICE") {
             Write-Output "Connecting to Azure Services"
@@ -97,21 +105,36 @@ Function Connect-Services {
             Connect-MgGraph -Scopes "AuditLog.Read.All", "Policy.Read.All", "Directory.Read.All", "IdentityProvider.Read.All", "Organization.Read.All", "User.Read.All", "UserAuthenticationMethod.Read.All"
             #Select-MgProfile -Name beta
             Write-Output "Connected via Graph to $((Get-MgOrganization).DisplayName)"
+            # Elevate Access to read Subscription Policies
+            Try {
+                Invoke-RestMethod -Method Post -Uri "https://management.azure.com/providers/Microsoft.Authorization/elevateAccess?api-version=2016-07-01" -Headers @{Authorization = "Bearer $((Get-AzAccessToken).Token)" }
+            }
+            Catch {
+                Write-Host "Error. Manual elevation required."
+            }
         }
         If ($auth -EQ "APP") {
+            # Gather necessary information
+            $email = Read-Host -Prompt "Enter your email address"
             $appID = Read-Host -Prompt "Enter the client/application Id"
             $thumbprint = Read-Host -Prompt "Enter the certificate thumbprint"
+
+            # Get Tenant information
+            If ($email -like "*@*") {
+                $domain = ($email -split '@')[1]
+            }
+
+            Write-Output "Collecting Tenant ID and Authorization..."
+            $tenantID = (((Invoke-WebRequest -Uri "https://login.microsoftonline.com/$domain/.well-known/openid-configuration" -UseBasicParsing).Content | ConvertFrom-Json).token_endpoint -split '/')[3]
+
             Write-Output "Connecting to Azure Services"
-            Connect-AzAccount -ApplicationId $appID -CertificateThumbprint $thumbprint
+            Connect-AzAccount -ApplicationId $appID -CertificateThumbprint $thumbprint -Tenant $tenantID
             # Connect to Microsoft Graph
             Write-Output "Connecting to Microsoft Graph"
             Connect-MgGraph -ClientId $appID -TenantId $tenantID -CertificateThumbPrint $thumbprint | Out-Null
             #Select-MgProfile -Name beta
             Write-Output "Connected via Graph to $((Get-MgOrganization).DisplayName)"
-        }
-
-        
-    	
+        }	
     }
     Catch {
         Write-Warning "Error message: $_"
@@ -199,7 +222,6 @@ Function Confirm-InstalledModules {
     Else {
         Connect-Services
     }
-
 }
 
 
@@ -216,234 +238,290 @@ Else {
     }
 }
 
-$subscriptions = Get-AzSubscription
+# Create Output Directory if required
+Try {
+    New-Item -ItemType Directory -Path $out_path -Force | Out-Null
+    If ((Test-Path $out_path) -eq $true) {
+        $out_path = Resolve-Path $out_path
+        Write-Output "$($out_path.Path) created successfully."
+    }
+}
+Catch {
+    Write-Error "Directory not created. Please check permissions."
+    Confirm-Close
+}
+
+Try {
+    $subscriptions = Get-AzSubscription
+}
+Catch {
+    $exc = $_.Exception.Message
+    If ($exc -like "*Run Connect-AzAccount to login*") {
+        Write-Error "Connection to the tenant failed. Please verify Tenant and Account details and run AzureInspect again."
+    }
+}
 
 $count = 0
 
-Foreach ($subscription in $subscriptions) {
-    $count += 1
-    # Create a subfolder for each subscription
-    #    $path = "$out_path\Subscription_$($subscription.Name)"
-    $path = "$out_path\Subscription_$($count)"
+$subPath = ''
 
-    # Set the context for the associated subscription
-    Write-Output "Selecting subscription $($subscription.Name)"
-    Set-AzContext -Subscription $subscription.Id
-
-    # Get a list of every available detection module by parsing the PowerShell
-    # scripts present in the .\inspectors folder. 
-    # Exclude specified Inspectors
-    If ($excluded_inspectors -and $excluded_inspectors.Count) {
-        $excluded_inspectors = foreach ($inspector in $excluded_inspectors) { "$inspector.ps1" }
-        $inspectors = (Get-ChildItem .\inspectors\*.ps1 -exclude $excluded_inspectors).Name | ForEach-Object { ($_ -split ".ps1")[0] }
-    }
-    else {
-        $inspectors = (Get-ChildItem .\inspectors\*.ps1).Name | ForEach-Object { ($_ -split ".ps1")[0] }
-    }
-
-    # Use Selected Inspectors
-    If ($selected_inspectors -AND $selected_inspectors.Count) {
-        "The following inspectors were selected for use: "
-        Foreach ($inspector in $selected_inspectors) {
-            Write-Output $inspector
-        }
-    }
-    elseif ($excluded_Inspectors -and $excluded_inspectors.Count) {
-        $selected_inspectors = $inspectors
-        Write-Output "Using inspectors:`n"
-        Foreach ($inspector in $inspectors) {
-            Write-Output $inspector
-        }
-    }
-    Else {
-        "Using all inspectors."
-        $selected_inspectors = $inspectors
-    }
-
-    # Create Output Directory if required
-    Try {
-        New-Item -ItemType Directory -Force -Path $path | Out-Null
+If ($subscriptions) {
+    Foreach ($subscription in $subscriptions) {
+        $count += 1
+        # Create a subfolder for each subscription
+        $path = "$out_path\Subscription_$($count)"
+        
+        New-Item -ItemType Directory -Path $path -Force | Out-Null
+        
         If ((Test-Path $path) -eq $true) {
             $path = Resolve-Path $path
             Write-Output "$($path.Path) created successfully."
-        }
-    }
-    Catch {
-        Write-Error "Directory not created. Please check permissions."
-        Confirm-Close
-    }
-
-    Try {
-        # Maintain a list of all findings, beginning with an empty list.
-        $findings = @()
-
-        # For every inspector the user wanted to run...
-        ForEach ($selected_inspector in $selected_inspectors) {
-            # ...if the user selected a valid inspector...
-            If ($inspectors.Contains($selected_inspector)) {
-                Write-Output "Invoking Inspector: $selected_inspector"
-                
-                # Get the static data (finding description, remediation etc.) associated with that inspector module.
-                $finding = Get-Content .\inspectors\$selected_inspector.json | Out-String | ConvertFrom-Json
-                
-                # Invoke the actual inspector module and store the resulting list of insecure objects.
-                $finding.AffectedObjects = Invoke-Expression ".\inspectors\$selected_inspector.ps1"
-                
-                # Add the finding to the list of all findings.
-                $findings += $finding
-            }
-            Else {
-                Write-Output "$selected_inspector is not a valid inspector or could not be found. Please re-run the script and select valid inspectors."
-                Confirm-Close
-            }
+            $subPath = $path
         }
 
-        # Function that retrieves templating information from 
-        function Parse-Template {
-            $template = (Get-Content ".\AzureInspectDefaultTemplate.html") -join "`n"
-            $template -match '\<!--BEGIN_FINDING_LONG_REPEATER-->([\s\S]*)\<!--END_FINDING_LONG_REPEATER-->'
-            $findings_long_template = $matches[1]
-            
-            $template -match '\<!--BEGIN_FINDING_SHORT_REPEATER-->([\s\S]*)\<!--END_FINDING_SHORT_REPEATER-->'
-            $findings_short_template = $matches[1]
-            
-            $template -match '\<!--BEGIN_AFFECTED_OBJECTS_REPEATER-->([\s\S]*)\<!--END_AFFECTED_OBJECTS_REPEATER-->'
-            $affected_objects_template = $matches[1]
-            
-            $template -match '\<!--BEGIN_REFERENCES_REPEATER-->([\s\S]*)\<!--END_REFERENCES_REPEATER-->'
-            $references_template = $matches[1]
-            
-            $template -match '\<!--BEGIN_EXECSUM_TEMPLATE-->([\s\S]*)\<!--END_EXECSUM_TEMPLATE-->'
-            $execsum_template = $matches[1]
-            
-            return @{
-                FindingShortTemplate    = $findings_short_template;
-                FindingLongTemplate     = $findings_long_template;
-                AffectedObjectsTemplate = $affected_objects_template;
-                ReportTemplate          = $template;
-                ReferencesTemplate      = $references_template;
-                ExecsumTemplate         = $execsum_template
+        # Set the context for the associated subscription
+        Write-Output "Selecting subscription $($subscription.Name)"
+        Set-AzContext -Subscription $subscription.Id
+
+        # Get a list of every available detection module by parsing the PowerShell
+        # scripts present in the .\inspectors folder. 
+        # Exclude specified Inspectors
+        If ($excluded_inspectors -and $excluded_inspectors.Count) {
+            $excluded_inspectors = foreach ($inspector in $excluded_inspectors) { "$inspector.ps1" }
+            If ($IsWindows) {
+                $inspectors = (Get-ChildItem .\inspectors\*.ps1 -exclude $excluded_inspectors).Name | ForEach-Object { ($_ -split ".ps1")[0] }
+            }
+            ElseIf ($IsLinux) {
+                $inspectors = (Get-ChildItem ./Inspectors/*.ps1 -exclude $excluded_inspectors).Name | ForEach-Object { ($_ -split ".ps1")[0] }
+            }
+            ElseIf ($IsMacOS) {
+                $inspectors = (Get-ChildItem ./Inspectors/*.ps1 -exclude $excluded_inspectors).Name | ForEach-Object { ($_ -split ".ps1")[0] }
+            }
+        }
+        else {
+            If ($IsWindows) {
+                $inspectors = (Get-ChildItem .\inspectors\*.ps1).Name | ForEach-Object { ($_ -split ".ps1")[0] }
+            }
+            ElseIf ($IsLinux) {
+                $inspectors = (Get-ChildItem ./Inspectors/*.ps1).Name | ForEach-Object { ($_ -split ".ps1")[0] }
+            }
+            ElseIf ($IsMacOS) {
+                $inspectors = (Get-ChildItem ./Inspectors/*.ps1).Name | ForEach-Object { ($_ -split ".ps1")[0] }
             }
         }
 
-        $templates = Parse-Template
+        # Use Selected Inspectors
+        If ($selected_inspectors -AND $selected_inspectors.Count) {
+            "The following inspectors were selected for use: "
+            Foreach ($inspector in $selected_inspectors) {
+                Write-Output $inspector
+            }
+        }
+        elseif ($excluded_Inspectors -and $excluded_inspectors.Count) {
+            $selected_inspectors = $inspectors
+            Write-Output "Using inspectors:`n"
+            Foreach ($inspector in $inspectors) {
+                Write-Output $inspector
+            }
+        }
+        Else {
+            "Using all inspectors."
+            $selected_inspectors = $inspectors
+        }
 
-        # Maintain a running list of each finding, represented as HTML
-        $short_findings_html = '' 
-        $long_findings_html = ''
 
-        $findings_count = 0
+        Try {
+            # Maintain a list of all findings, beginning with an empty list.
+            $findings = @()
 
-        #$sortedFindings1 = $findings | Sort-Object {$_.FindingName}
-        $sortedFindings = $findings | Sort-Object { Switch -Regex ($_.Impact) { 'Critical' { 1 }	'High' { 2 }	'Medium' { 3 }	'Low' { 4 }	'Informational' { 5 } }; $_.FindingName } 
-        ForEach ($finding in $sortedFindings) {
-            # If the result from the inspector was not $null,
-            # it identified a real finding that we must process.
-            If ($null -NE $finding.AffectedObjects) {
-                # Increment total count of findings
-                $findings_count += 1
-                
-                # Keep an HTML variable representing the current finding as HTML
-                $short_finding_html = $templates.FindingShortTemplate
-                $long_finding_html = $templates.FindingLongTemplate
-                
-                # Insert finding name and number into template HTML
-                $short_finding_html = $short_finding_html.Replace("{{FINDING_NAME}}", $finding.FindingName)
-                $short_finding_html = $short_finding_html.Replace("{{FINDING_NUMBER}}", $findings_count.ToString())
-                $long_finding_html = $long_finding_html.Replace("{{FINDING_NAME}}", $finding.FindingName)
-                $long_finding_html = $long_finding_html.Replace("{{FINDING_NUMBER}}", $findings_count.ToString())
-                
-                # Finding Impact
-                If ($finding.Impact -eq 'Critical') {
-                    $htmlImpact = '<span style="color:Crimson;"><strong>Critical</strong></span>'
-                    $short_finding_html = $short_finding_html.Replace("{{IMPACT}}", $htmlImpact)
-                    $long_finding_html = $long_finding_html.Replace("{{IMPACT}}", $htmlImpact)
-                }
-                ElseIf ($finding.Impact -eq 'High') {
-                    $htmlImpact = '<span style="color:DarkOrange;"><strong>High</strong></span>'
-                    $short_finding_html = $short_finding_html.Replace("{{IMPACT}}", $htmlImpact)
-                    $long_finding_html = $long_finding_html.Replace("{{IMPACT}}", $htmlImpact)
-                }
-                Else {
-                    $short_finding_html = $short_finding_html.Replace("{{IMPACT}}", $finding.Impact)
-                    $long_finding_html = $long_finding_html.Replace("{{IMPACT}}", $finding.Impact)
-                }
-                
-                # Finding description
-                $long_finding_html = $long_finding_html.Replace("{{DESCRIPTION}}", $finding.Description)
-                
-                # Finding Remediation
-                If ($finding.Remediation.length -GT 300) {
-                    $short_finding_text = "Complete remediation advice is provided in the body of the report. Clicking the link to the left will take you there."
-                }
-                Else {
-                    $short_finding_text = $finding.Remediation
-                }
-                
-                $short_finding_html = $short_finding_html.Replace("{{REMEDIATION}}", $short_finding_text)
-                $long_finding_html = $long_finding_html.Replace("{{REMEDIATION}}", $finding.Remediation)
-                
-                # Affected Objects
-                If ($finding.AffectedObjects.Count -GT 15) {
-                    $condensed = "<a href='{name}'>{count} Affected Objects Identified<a/>."
-                    $condensed = $condensed.Replace("{count}", $finding.AffectedObjects.Count.ToString())
-                    $condensed = $condensed.Replace("{name}", $finding.FindingName)
-                    $affected_object_html = $templates.AffectedObjectsTemplate.Replace("{{AFFECTED_OBJECT}}", $condensed)
-                    $fname = $finding.FindingName
-                    $finding.AffectedObjects | Out-File -FilePath $path\$fname
-                }
-                Else {
-                    $affected_object_html = ''
-                    ForEach ($affected_object in $finding.AffectedObjects) {
-                        $affected_object_html += $templates.AffectedObjectsTemplate.Replace("{{AFFECTED_OBJECT}}", $affected_object)
+            # For every inspector the user wanted to run...
+            ForEach ($selected_inspector in $selected_inspectors) {
+                # ...if the user selected a valid inspector...
+                If ($inspectors.Contains($selected_inspector)) {
+                    Write-Output "Invoking Inspector: $selected_inspector"
+                    
+                    # Get the static data (finding description, remediation etc.) associated with that inspector module.
+                    If ($IsWindows) {
+                        $finding = Get-Content .\inspectors\$selected_inspector.json | Out-String | ConvertFrom-Json
                     }
+                    ElseIf ($IsLinux) {
+                        $finding = Get-Content ./Inspectors/$selected_inspector.json | Out-String | ConvertFrom-Json
+                    }
+                    ElseIf ($IsMacOS) {
+                        $finding = Get-Content ./Inspectors/$selected_inspector.json | Out-String | ConvertFrom-Json
+                    }
+                    
+                    # Invoke the actual inspector module and store the resulting list of insecure objects.
+                    $finding.AffectedObjects = Invoke-Expression ".\Inspectors\$selected_inspector.ps1"
+                    
+                    # Add the finding to the list of all findings.
+                    $findings += $finding
                 }
-                
-                $long_finding_html = $long_finding_html.Replace($templates.AffectedObjectsTemplate, $affected_object_html)
-                
-                # References
-                $reference_html = ''
-                ForEach ($reference in $finding.References) {
-                    $this_reference = $templates.ReferencesTemplate.Replace("{{REFERENCE_URL}}", $reference.Url)
-                    $this_reference = $this_reference.Replace("{{REFERENCE_TEXT}}", $reference.Text)
-                    $reference_html += $this_reference
+                Else {
+                    Write-Output "$selected_inspector is not a valid inspector or could not be found. Please re-run the script and select valid inspectors."
+                    Confirm-Close
                 }
+            }
+
+            # Function that retrieves templating information from 
+            function Parse-Template {
+                $template = (Get-Content ".\AzureInspectDefaultTemplate.html") -join "`n"
+                $template -match '\<!--BEGIN_FINDING_LONG_REPEATER-->([\s\S]*)\<!--END_FINDING_LONG_REPEATER-->'
+                $findings_long_template = $matches[1]
                 
-                $long_finding_html = $long_finding_html.Replace($templates.ReferencesTemplate, $reference_html)
+                $template -match '\<!--BEGIN_FINDING_SHORT_REPEATER-->([\s\S]*)\<!--END_FINDING_SHORT_REPEATER-->'
+                $findings_short_template = $matches[1]
                 
-                # Add the completed short and long findings to the running list of findings (in HTML)
-                $short_findings_html += $short_finding_html
-                $long_findings_html += $long_finding_html
+                $template -match '\<!--BEGIN_AFFECTED_OBJECTS_REPEATER-->([\s\S]*)\<!--END_AFFECTED_OBJECTS_REPEATER-->'
+                $affected_objects_template = $matches[1]
+                
+                $template -match '\<!--BEGIN_REFERENCES_REPEATER-->([\s\S]*)\<!--END_REFERENCES_REPEATER-->'
+                $references_template = $matches[1]
+                
+                $template -match '\<!--BEGIN_EXECSUM_TEMPLATE-->([\s\S]*)\<!--END_EXECSUM_TEMPLATE-->'
+                $execsum_template = $matches[1]
+                
+                return @{
+                    FindingShortTemplate    = $findings_short_template;
+                    FindingLongTemplate     = $findings_long_template;
+                    AffectedObjectsTemplate = $affected_objects_template;
+                    ReportTemplate          = $template;
+                    ReferencesTemplate      = $references_template;
+                    ExecsumTemplate         = $execsum_template
+                }
+            }
+
+            $templates = Parse-Template
+
+            # Maintain a running list of each finding, represented as HTML
+            $short_findings_html = '' 
+            $long_findings_html = ''
+
+            $findings_count = 0
+
+            #$sortedFindings1 = $findings | Sort-Object {$_.FindingName}
+            $sortedFindings = $findings | Sort-Object { Switch -Regex ($_.Impact) { 'Critical' { 1 }	'High' { 2 }	'Medium' { 3 }	'Low' { 4 }	'Informational' { 5 } }; $_.FindingName } 
+            ForEach ($finding in $sortedFindings) {
+                # If the result from the inspector was not $null,
+                # it identified a real finding that we must process.
+                If ($null -NE $finding.AffectedObjects) {
+                    # Increment total count of findings
+                    $findings_count += 1
+                    
+                    # Keep an HTML variable representing the current finding as HTML
+                    $short_finding_html = $templates.FindingShortTemplate
+                    $long_finding_html = $templates.FindingLongTemplate
+                    
+                    # Insert finding name and number into template HTML
+                    $short_finding_html = $short_finding_html.Replace("{{FINDING_NAME}}", $finding.FindingName)
+                    $short_finding_html = $short_finding_html.Replace("{{FINDING_NUMBER}}", $findings_count.ToString())
+                    $long_finding_html = $long_finding_html.Replace("{{FINDING_NAME}}", $finding.FindingName)
+                    $long_finding_html = $long_finding_html.Replace("{{FINDING_NUMBER}}", $findings_count.ToString())
+                    
+                    # Finding Impact
+                    If ($finding.Impact -eq 'Critical') {
+                        $htmlImpact = '<span style="color:Crimson;"><strong>Critical</strong></span>'
+                        $short_finding_html = $short_finding_html.Replace("{{IMPACT}}", $htmlImpact)
+                        $long_finding_html = $long_finding_html.Replace("{{IMPACT}}", $htmlImpact)
+                    }
+                    ElseIf ($finding.Impact -eq 'High') {
+                        $htmlImpact = '<span style="color:DarkOrange;"><strong>High</strong></span>'
+                        $short_finding_html = $short_finding_html.Replace("{{IMPACT}}", $htmlImpact)
+                        $long_finding_html = $long_finding_html.Replace("{{IMPACT}}", $htmlImpact)
+                    }
+                    Else {
+                        $short_finding_html = $short_finding_html.Replace("{{IMPACT}}", $finding.Impact)
+                        $long_finding_html = $long_finding_html.Replace("{{IMPACT}}", $finding.Impact)
+                    }
+                    
+                    # Finding description
+                    $long_finding_html = $long_finding_html.Replace("{{DESCRIPTION}}", $finding.Description)
+                    
+                    # Finding Remediation
+                    If ($finding.Remediation.length -GT 300) {
+                        $short_finding_text = "Complete remediation advice is provided in the body of the report. Clicking the link to the left will take you there."
+                    }
+                    Else {
+                        $short_finding_text = $finding.Remediation
+                    }
+                    
+                    $short_finding_html = $short_finding_html.Replace("{{REMEDIATION}}", $short_finding_text)
+                    $long_finding_html = $long_finding_html.Replace("{{REMEDIATION}}", $finding.Remediation)
+                    
+                    # Affected Objects
+                    If ($finding.AffectedObjects.Count -GT 30) {
+                        $condensed = "<a href='{name}'>{count} Affected Objects Identified<a/>."
+                        $condensed = $condensed.Replace("{count}", $finding.AffectedObjects.Count.ToString())
+                        $condensed = $condensed.Replace("{name}", $finding.FindingName)
+                        $affected_object_html = $templates.AffectedObjectsTemplate.Replace("{{AFFECTED_OBJECT}}", $condensed)
+                        $fname = $finding.FindingName
+                        $finding.AffectedObjects | Out-File -FilePath $path\$fname
+                    }
+                    Else {
+                        $affected_object_html = ''
+                        ForEach ($affected_object in $finding.AffectedObjects) {
+                            $affected_object_html += $templates.AffectedObjectsTemplate.Replace("{{AFFECTED_OBJECT}}", $affected_object)
+                        }
+                    }
+                    
+                    $long_finding_html = $long_finding_html.Replace($templates.AffectedObjectsTemplate, $affected_object_html)
+                    
+                    # References
+                    $reference_html = ''
+                    ForEach ($reference in $finding.References) {
+                        $this_reference = $templates.ReferencesTemplate.Replace("{{REFERENCE_URL}}", $reference.Url)
+                        $this_reference = $this_reference.Replace("{{REFERENCE_TEXT}}", $reference.Text)
+                        $reference_html += $this_reference
+                    }
+                    
+                    $long_finding_html = $long_finding_html.Replace($templates.ReferencesTemplate, $reference_html)
+                    
+                    # Add the completed short and long findings to the running list of findings (in HTML)
+                    $short_findings_html += $short_finding_html
+                    $long_findings_html += $long_finding_html
+                }
+            }
+
+            # Insert command line execution information. This is coupled kinda badly, as is the Affected Objects html.
+            $flags = "<b>Prepared for organization:</b><br/>" + $org_name + "<br/><br/>"
+            $flags = $flags + "<b>Subscription Information</b>:<br/> <b>" + "</b> Subscription Name: <b>" + $subscription.Name + "</b> Subscription ID: <b>" + $subscription.Id + "</b>.<br/><br/>"
+            $flags = $flags + "<b>Stats</b>:<br/> <b>" + $findings_count + "</b> out of <b>" + $inspectors.Count + "</b> executed inspector modules identified possible opportunities for improvement in subscription <b>" + $subscription.Name + "</b>.<br/><br/>"  
+            $flags = $flags + "<b>Inspector Modules Executed</b>:<br/>" + [String]::Join("<br/>", $selected_inspectors)
+
+            $output = $templates.ReportTemplate.Replace($templates.FindingShortTemplate, $short_findings_html)
+            $output = $output.Replace($templates.FindingLongTemplate, $long_findings_html)
+            $output = $output.Replace($templates.ExecsumTemplate, $templates.ExecsumTemplate.Replace("{{CMDLINEFLAGS}}", $flags))
+
+            Try {
+                $output | Out-File -FilePath "$path\Report_Subscription$($count)_$($org_name)_$(Get-Date -Format "yyyy-MM-dd").html"
+            }
+            Catch {
+                If ($_.Exception.Message -like "*Could not find a part of the path*") {
+                    Write-Host "Report path failed. Check Reports folder at Script Root."
+                    $output | Out-File -FilePath ".\Reports\Report_$($org_name)_Subscription$($count)_$(Get-Date -Format "yyyy-MM-dd_hh-mm-ss").html"
+                }
             }
         }
-
-        # Insert command line execution information. This is coupled kinda badly, as is the Affected Objects html.
-        $flags = "<b>Prepared for organization:</b><br/>" + $org_name + "<br/><br/>"
-        $flags = $flags + "<b>Subscription Information</b>:<br/> <b>" + "</b> Subscription Name: <b>" + $subscription.Name + "</b> Subscription ID: <b>" + $subscription.Id + "</b>.<br/><br/>"
-        $flags = $flags + "<b>Stats</b>:<br/> <b>" + $findings_count + "</b> out of <b>" + $inspectors.Count + "</b> executed inspector modules identified possible opportunities for improvement in subscription <b>" + $subscription.Name + "</b>.<br/><br/>"  
-        $flags = $flags + "<b>Inspector Modules Executed</b>:<br/>" + [String]::Join("<br/>", $selected_inspectors)
-
-        $output = $templates.ReportTemplate.Replace($templates.FindingShortTemplate, $short_findings_html)
-        $output = $output.Replace($templates.FindingLongTemplate, $long_findings_html)
-        $output = $output.Replace($templates.ExecsumTemplate, $templates.ExecsumTemplate.Replace("{{CMDLINEFLAGS}}", $flags))
-
-        $output | Out-File -FilePath "$path\Report_$($org_name)_Subscription$($count)_$(Get-Date -Format "yyyy-MM-dd_hh-mm-ss").html"
+        Catch {
+            Write-Warning "Error message: $_"
+        
+            $message = $_.ToString()
+            $exception = $_.Exception
+            $strace = $_.ScriptStackTrace
+            $failingline = $_.InvocationInfo.Line
+            $positionmsg = $_.InvocationInfo.PositionMessage
+            $pscommandpath = $_.InvocationInfo.PSCommandPath
+            $failinglinenumber = $_.InvocationInfo.ScriptLineNumber
+            $scriptname = $_.InvocationInfo.ScriptName
+            Write-Verbose "Write to log"
+            Write-ErrorLog -message $message -exception $exception -scriptname $scriptname -failinglinenumber $failinglinenumber -failingline $failingline -pscommandpath $pscommandpath -positionmsg $pscommandpath -stacktrace $strace
+            Write-Verbose "Errors written to log"
+        }
     }
-    Catch {
-        Write-Warning "Error message: $_"
-    
-        $message = $_.ToString()
-        $exception = $_.Exception
-        $strace = $_.ScriptStackTrace
-        $failingline = $_.InvocationInfo.Line
-        $positionmsg = $_.InvocationInfo.PositionMessage
-        $pscommandpath = $_.InvocationInfo.PSCommandPath
-        $failinglinenumber = $_.InvocationInfo.ScriptLineNumber
-        $scriptname = $_.InvocationInfo.ScriptName
-        Write-Verbose "Write to log"
-        Write-ErrorLog -message $message -exception $exception -scriptname $scriptname -failinglinenumber $failinglinenumber -failingline $failingline -pscommandpath $pscommandpath -positionmsg $pscommandpath -stacktrace $strace
-        Write-Verbose "Errors written to log"
-    }
+}
+Else {
+    Write-Warning "No Subscription Access. Exiting..."
+    Break
 }
 
 $compress = @{
@@ -451,6 +529,7 @@ $compress = @{
     CompressionLevel = "Fastest"
     DestinationPath  = "$out_path\$($org_name)_Report.zip"
 }
+
 Compress-Archive @compress
 
 function Disconnect {

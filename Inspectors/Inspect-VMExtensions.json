@@ -1,0 +1,17 @@
+{
+    "FindingName": "Virtual Machines with Extensions",
+    "Description": "The listed virtual machines were found to have Virtual Machine Extensions installed. Installed extensions may allow for misconfigurations, data leakage, or unintended access to the resources they are installed on.",
+    "Remediation": "Navigate to  the identified virtual machines individually &rarr; select \"Extensions\" and review the installed extensions. Remove any unapproved extensions, or extensions no longer in use, by selecting \"Uninstall\" on the desired extension.",
+    "Impact": "Medium",
+    "AffectedObjects": "",
+    "References": [
+        {
+            "Url": "https://learn.microsoft.com/en-us/azure/virtual-machines/extensions/overview",
+            "Text": "Azure virtual machine extensions and features"
+        },
+        {
+            "Url": "https://www.darkreading.com/cloud-security/microsoft-azure-vms-highjacked-in-cloud-cyberattack",
+            "Text": "Microsoft Azure VMs Hijacked in Cloud Cyberattack"
+        }
+    ]
+}

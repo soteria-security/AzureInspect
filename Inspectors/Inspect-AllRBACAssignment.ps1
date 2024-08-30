@@ -9,10 +9,27 @@ function Inspect-AllRBACAssignment {
     Try {
         $results = 0
 
-        $allResources = Get-AzResource
+        $rescourceTypes = @('Microsoft.Compute/virtualMachines/extensions', 'Microsoft.Resources/templateSpecs/versions', 'Microsoft.Automation/automationAccounts/runbooks')
 
-        Foreach ($AZresource in $allResources) {
-            $rbac = Get-AzRoleAssignment -ResourceGroupName (($AZresource).ResourceId -split '/')[4] -ResourceName (($AZresource).ResourceId -split '/')[((($AZresource).ResourceId -split '/').length - 1)] -ResourceType "$((($AZresource).ResourceId -split '/')[((($AZresource).ResourceId -split '/').length -3)])/$((($AZresource).ResourceId -split '/')[((($AZresource).ResourceId -split '/').length -2)])"
+        $allResources = Get-AzResource | Where-Object { $_.ResourceType -notin $rescourceTypes }
+
+        $allResources  | ForEach-Object -Begin {
+            $total = $allResources.Count
+            $counter = 0
+        } -Process {
+            $counter++
+            $progress = ($counter / $total) * 100
+            $progressMsg = "Processing Object $counter of $total"
+            Write-Progress -Activity "Processing AD Objects" -Status $progressMsg -PercentComplete $progress
+
+            $global:Resource = $_
+
+            Try {
+                $rbac = Get-AzRoleAssignment -ResourceGroupName (($_).ResourceId -split '/')[4] -ResourceName (($_).ResourceId -split '/')[((($_).ResourceId -split '/').length - 1)] -ResourceType "$((($_).ResourceId -split '/')[((($_).ResourceId -split '/').length -3)])/$((($_).ResourceId -split '/')[((($_).ResourceId -split '/').length -2)])" -ErrorAction Stop
+            }
+            Catch {
+                Write-Warning "Failed to process $(($global:Resource).Name). Skipping...`n$($_.Exception.Message)`n$(($global:Resource).Name)`n$(($global:Resource).ResourceType)`n`n"
+            }
             
             foreach ($member in $rbac) {
                 $assignmentScope = ''
@@ -29,12 +46,12 @@ function Inspect-AllRBACAssignment {
                 }
                 ElseIf (($member.Scope -match "/subscriptions/$((Get-AzContext).Subscription)/resourceGroups/*") -and ($member.Scope -notmatch "/providers/Microsoft")) {
                     $assignmentScope = 'Resource Group (Inherited)'
-                    $resource = "Resource Group: $($AZresource.ResourceGroupName)"
+                    $resource = "Resource Group: $($_.ResourceGroupName)"
                 }
                 ElseIf (($member.Scope -match "/providers/Microsoft") -and ($member.Scope -notmatch "/providers/Microsoft.Management/managementGroups")) {
                     $assignmentScope = 'Resource'
                     $value = $member.Scope -split '/'
-                    $resource = "Resource: $($AZresource.Name)"
+                    $resource = "Resource: $($_.Name)"
                 }
 
                 $result = [PSCustomObject]@{
@@ -43,13 +60,15 @@ function Inspect-AllRBACAssignment {
                     Role        = $member.RoleDefinitionName
                     Scope       = $assignmentScope
                     Resource    = $resource
-                    Type        = $AZresource.ResourceType
+                    Type        = $_.ResourceType
                     Permissions = ((Get-AzRoleDefinition -Id $member.RoleDefinitionId).Actions -join ",")
                 }
 
                 $results += 1
-                $result | Export-Csv -Path "$(@($path))\All_Resource_RBAC_Assignment.csv" -NoTypeInformation -Delimiter ';' -Append
+                $result | Export-Csv -Path "$(@($subPath))\All_Resource_RBAC_Assignment.csv" -NoTypeInformation -Delimiter ';' -Append
             }
+        } -End {
+            Write-Progress -Activity "Processing AD Objects" -Completed
         }
 
         return "$results affected objects identified. See supplemental document <i>All_Resource_RBAC_Assignment.csv</i> for additional details."

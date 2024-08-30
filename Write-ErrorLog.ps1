@@ -1,38 +1,38 @@
-$path = @($out_path)
+$path = @($subPath)
 
 Function Write-ErrorLog {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory=$false,
-                    HelpMessage="Error message.")] 
+        [Parameter(Mandatory = $false,
+            HelpMessage = "Error message.")] 
         [string]$message,
-        [Parameter( Mandatory=$false,
-                    HelpMessage="Exception.")]
+        [Parameter( Mandatory = $false,
+            HelpMessage = "Exception.")]
         [string]$exception,
-        [Parameter(Mandatory=$false, 
-                    HelpMessage="Name of the script that is failing.")]
+        [Parameter(Mandatory = $false, 
+            HelpMessage = "Name of the script that is failing.")]
         [string]$scriptname,
-        [Parameter(Mandatory=$false,
-                    HelpMessage="Script fails at line number.")]
+        [Parameter(Mandatory = $false,
+            HelpMessage = "Script fails at line number.")]
         [string]$failinglinenumber,
-        [Parameter(Mandatory=$false,
-                    HelpMessage="Failing line.")]
+        [Parameter(Mandatory = $false,
+            HelpMessage = "Failing line.")]
         [string]$failingline,
-        [Parameter(Mandatory=$false,
-                    HelpMessage="Powershell command path.")]
+        [Parameter(Mandatory = $false,
+            HelpMessage = "Powershell command path.")]
         [string]$pscommandpath,    
-        [Parameter(Mandatory=$false,
-                    HelpMessage="Position message.")]
+        [Parameter(Mandatory = $false,
+            HelpMessage = "Position message.")]
         [string]$positionmsg, 
-        [Parameter(Mandatory=$false,
-                    HelpMessage="Stack trace.")]
+        [Parameter(Mandatory = $false,
+            HelpMessage = "Stack trace.")]
         [string]$stacktrace
     )
     BEGIN {
         $logfolder = "$path\log"
         $errorlog = "$logfolder\ErrorLog.log"
         
-        if  ( !( Test-Path -Path $logfolder -PathType "Container" ) ) {
+        if ( !( Test-Path -Path $logfolder -PathType "Container" ) ) {
             Write-Verbose "Creating log folder in: $path"
             New-Item -Path $logfolder -ItemType "Container" -ErrorAction Stop
             

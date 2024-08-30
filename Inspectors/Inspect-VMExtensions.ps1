@@ -1,33 +1,29 @@
 
-
 $ErrorActionPreference = "Stop"
 
 $errorHandling = "$((Get-Item $PSScriptRoot).Parent.FullName)\Write-ErrorLog.ps1"
 
 . $errorHandling
 
-function Inspect-SAKeyRotation {
+function Inspect-VMExtensions {
     Try {
-        $storageAccounts = Get-AzStorageAccount
-        $accounts = @()
+        $results = @()
 
-        foreach ($sa in $storageAccounts) {
-            $keys = Get-AzStorageAccountKey -Name $sa.StorageAccountName -ResourceGroupName $sa.ResourceGroupName
-            If ($keys) {
-                foreach ($key in $keys) {
-                    $keyCreated = $key.CreationTime.ToShortDateString()
-                    $saCreated = $sa.CreationTime.ToShortDateString()
-                    if ($keyCreated -le $saCreated) {
-                        $accounts += "Storage Account: $($sa.StorageAccountName), Resource Group: $($sa.ResourceGroupName), Key Name: $($key.KeyName)"
-                    }
+        $virtualMachines = Get-AzVM
+
+        foreach ($vm in $virtualMachines) {
+            $vmExtensions = Get-AzVMExtension -ResourceGroupName $vm.ResourceGroupName -VMName $vm.Name
+
+            If ($vmExtensions) {
+                $result = [PSCustomObject]@{
+                    VMName    = $vm.Name
+                    Extension = If (($vmExtensions | Measure-Object).Count -gt 1) { $vmExtensions.Name -join ',' }Else { $vmExtensions.Name }
                 }
+                $results += "Virtual Machine: $($result.VMName), Extensions: $($result.Extension)"
             }
         }
 
-        if ($accounts.count -gt 0) {
-            return $accounts
-        }
-        Return $null
+        return $results
     }
     Catch {
         Write-Warning "Error message: $_"
@@ -47,4 +43,4 @@ function Inspect-SAKeyRotation {
     }
 }
 
-Return Inspect-SAKeyRotation
+return Inspect-VMExtensions
