@@ -87,11 +87,11 @@ Function Connect-Services {
             If ($domain -like "*@*") {
                 $domain = ($domain -split '@')[1]
             }
-            
+
             $tenantID = (((Invoke-WebRequest -Uri "https://login.microsoftonline.com/$domain/.well-known/openid-configuration" -UseBasicParsing).Content | ConvertFrom-Json).token_endpoint -split '/')[3]
 
             Write-Output "Connecting to Azure Services"
-            Connect-AzAccount -TenantId 
+            Connect-AzAccount -TenantId $tenantID
             # Connect to Microsoft Graph
             Write-Output "Connecting to Microsoft Graph"
             Connect-MgGraph -Scopes "AuditLog.Read.All", "Policy.Read.All", "Directory.Read.All", "IdentityProvider.Read.All", "Organization.Read.All", "User.Read.All", "UserAuthenticationMethod.Read.All"
