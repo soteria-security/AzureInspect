@@ -5,22 +5,25 @@ $errorHandling = "$((Get-Item $PSScriptRoot).Parent.FullName)\Write-ErrorLog.ps1
 
 . $errorHandling
 
+[string]$tenantID = @($tenantID)
+
 function Inspect-AllRBACAssignment {
     Try {
         $results = 0
 
         $rescourceTypes = @('Microsoft.Compute/virtualMachines/extensions', 'Microsoft.Resources/templateSpecs/versions', 'Microsoft.Automation/automationAccounts/runbooks')
 
-        $allResources = Get-AzResource | Where-Object { $_.ResourceType -notin $rescourceTypes }
+        $allResources = Get-AzResource  | Where-Object { $_.ResourceType -notin $rescourceTypes }
 
         $allResources  | ForEach-Object -Begin {
             $total = $allResources.Count
             $counter = 0
         } -Process {
             $counter++
+
             $progress = ($counter / $total) * 100
+            
             $progressMsg = "Processing Object $counter of $total"
-            Write-Progress -Activity "Processing AD Objects" -Status $progressMsg -PercentComplete $progress
 
             $global:Resource = $_
 
@@ -41,7 +44,7 @@ function Inspect-AllRBACAssignment {
                 }
                 ElseIf ($member.Scope -eq "/subscriptions/$((Get-AzContext).Subscription)") {
                     $assignmentScope = 'Subscription (Inherited)'
-                    $sub = Get-AzSubscription -SubscriptionId ($member.Scope -split '/')[2]
+                    $sub = Get-AzSubscription -TenantId $tenantID -SubscriptionId ($member.Scope -split '/')[2]
                     $resource = "Subscription: $($sub.Name)"
                 }
                 ElseIf (($member.Scope -match "/subscriptions/$((Get-AzContext).Subscription)/resourceGroups/*") -and ($member.Scope -notmatch "/providers/Microsoft")) {
@@ -51,7 +54,7 @@ function Inspect-AllRBACAssignment {
                 ElseIf (($member.Scope -match "/providers/Microsoft") -and ($member.Scope -notmatch "/providers/Microsoft.Management/managementGroups")) {
                     $assignmentScope = 'Resource'
                     $value = $member.Scope -split '/'
-                    $resource = "Resource: $($_.Name)"
+                    $resource = "Resource: $($value)"
                 }
 
                 $result = [PSCustomObject]@{
@@ -65,8 +68,11 @@ function Inspect-AllRBACAssignment {
                 }
 
                 $results += 1
+
                 $result | Export-Csv -Path "$(@($subPath))\All_Resource_RBAC_Assignment.csv" -NoTypeInformation -Delimiter ';' -Append
             }
+
+            Write-Progress -Activity "Processing Azure Objects" -Status $progressMsg -PercentComplete $progress
         } -End {
             Write-Progress -Activity "Processing AD Objects" -Completed
         }

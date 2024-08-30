@@ -100,15 +100,21 @@ Function Connect-Services {
 
             # Elevate Access to read Subscription Policies
             Try {
-                Invoke-RestMethod -Method Post -Uri "https://management.azure.com/providers/Microsoft.Authorization/elevateAccess?api-version=2016-07-01" -Headers @{Authorization = "Bearer $((Get-AzAccessToken).Token)" }
+                Invoke-RestMethod -Method Post -Uri "https://management.azure.com/providers/Microsoft.Authorization/elevateAccess?api-version=2016-07-01" -Headers @{Authorization = "Bearer $((Get-AzAccessToken -AsSecureString).Token)" }
             }
             Catch {
                 Write-Host "Error. Manual elevation required."
             }
         }
         If ($auth -EQ "DEVICE") {
+            If ($domain -like "*@*") {
+                $domain = ($domain -split '@')[1]
+            }
+
+            $tenantID = (((Invoke-WebRequest -Uri "https://login.microsoftonline.com/$domain/.well-known/openid-configuration" -UseBasicParsing).Content | ConvertFrom-Json).token_endpoint -split '/')[3]
+
             Write-Output "Connecting to Azure Services"
-            Connect-AzAccount -UseDeviceAuthentication
+            Connect-AzAccount -TenantId $tenantID -UseDeviceAuthentication
             # Connect to Microsoft Graph
             Write-Output "Connecting to Microsoft Graph"
             Connect-MgGraph -Scopes "AuditLog.Read.All", "Policy.Read.All", "Directory.Read.All", "IdentityProvider.Read.All", "Organization.Read.All", "User.Read.All", "UserAuthenticationMethod.Read.All"
@@ -116,10 +122,10 @@ Function Connect-Services {
             Write-Output "Connected via Graph to $((Get-MgOrganization).DisplayName)"
             # Elevate Access to read Subscription Policies
             Try {
-                Invoke-RestMethod -Method Post -Uri "https://management.azure.com/providers/Microsoft.Authorization/elevateAccess?api-version=2016-07-01" -Headers @{Authorization = "Bearer $((Get-AzAccessToken).Token)" }
+                Invoke-RestMethod -Method Post -Uri "https://management.azure.com/providers/Microsoft.Authorization/elevateAccess?api-version=2016-07-01" -Headers @{Authorization = "Bearer $((Get-AzAccessToken -AsSecureString).Token)" }
             }
             Catch {
-                Write-Host "Error. Manual elevation required."
+                Write-Host "Error. Manual elevation required. https://learn.microsoft.com/en-us/azure/role-based-access-control/elevate-access-global-admin?tabs=azure-portal"
             }
         }
         If ($auth -EQ "APP") {
@@ -261,7 +267,7 @@ Catch {
 }
 
 Try {
-    $subscriptions = Get-AzSubscription
+    $subscriptions = Get-AzSubscription -TenantId $tenantID
 }
 Catch {
     $exc = $_.Exception.Message
@@ -290,7 +296,16 @@ If ($subscriptions) {
 
         # Set the context for the associated subscription
         Write-Output "Selecting subscription $($subscription.Name)"
-        Set-AzContext -Subscription $subscription.Id
+
+        Try {
+            Set-AzContext -Subscription $subscription.Id -Tenant $tenantID -ErrorAction Stop
+        }
+        Catch {
+            $message = $_
+            If ($message -match "WARNING: Unable to acquire token for tenant '' with error 'Authentication failed against tenant") {
+                Write-Host "No access to subscription $($subscription.Name)`nSkipping..."
+            }
+        }
 
         # Get a list of every available detection module by parsing the PowerShell
         # scripts present in the .\inspectors folder. 
@@ -495,7 +510,7 @@ If ($subscriptions) {
             $flags = "<b>Prepared for organization:</b><br/>" + $org_name + "<br/><br/>"
             $flags = $flags + "<b>Subscription Information</b>:<br/> <b>" + "</b> Subscription Name: <b>" + $subscription.Name + "</b> Subscription ID: <b>" + $subscription.Id + "</b>.<br/><br/>"
             $flags = $flags + "<b>Stats</b>:<br/> <b>" + $findings_count + "</b> out of <b>" + $inspectors.Count + "</b> executed inspector modules identified possible opportunities for improvement in subscription <b>" + $subscription.Name + "</b>.<br/><br/>"  
-            $flags = $flags + "<b>Inspector Modules Executed</b>:<br/>" + [String]::Join("<br/>", $selected_inspectors)
+            $flags = $flags + "<b>Inspector Modules Executed</b>:<br/>" + "<br/>" + $selected_inspectors
 
             $output = $templates.ReportTemplate.Replace($templates.FindingShortTemplate, $short_findings_html)
             $output = $output.Replace($templates.FindingLongTemplate, $long_findings_html)
