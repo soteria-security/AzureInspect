@@ -622,12 +622,11 @@
                         <span class="c23">Risk</span>
                     </p>
                 </td>
-                <!--
-                    <td class="c12" colspan="1" rowspan="1">
-                        <p class="c8">
-                            <span class="c23">Status</span>
-                        </p>
-                    </td> -->
+                <td class="c11" colspan="1" rowspan="1">
+                    <p class="c8">
+                        <span class="c23">Status</span>
+                    </p>
+                </td>
             </tr>
             <!--BEGIN_FINDING_SHORT_REPEATER-->
             <tr class="c9">
@@ -645,12 +644,11 @@
                     <span class="table-detail-light">{{IMPACT}}</span>
                     </a>
                 </td>
-                <!--
-                    <td class="c15" colspan="1" rowspan="1">
-                        <p class="c0">
-                            <span class="table-detail-light">{{FINDING_STATUS}}</span>
-                        </p>
-                    </td>-->
+                <td class="c15" colspan="1" rowspan="1" style="">
+                    <p class="c0">
+                        <span class="table-detail-light">{{FINDING_STATUS}}</span>
+                    </p>
+                </td>
             </tr>
             <!--END_FINDING_SHORT_REPEATER-->
         </tbody>
@@ -703,6 +701,11 @@
     <p class="finding-paragraph">
         <span class="finding-detail-heading">Assessed Severity:</span>
         <span class="finding-detail-value">{{RISKRATING}}</span>
+    </p>
+    <span class="finding-paragraph-spacing">&nbsp;</span>
+    <p class="finding-paragraph">
+        <span class="finding-detail-heading">Status:</span>
+        <span class="finding-detail-value">{{FINDING_STATUS}}</span>
     </p>
     <span class="finding-paragraph-spacing">&nbsp;</span>
     <p class="finding-paragraph">

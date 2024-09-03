@@ -5,11 +5,15 @@ $errorHandling = "$((Get-Item $PSScriptRoot).Parent.FullName)\Write-ErrorLog.ps1
 
 . $errorHandling
 
-[string]$tenantID = @($tenantID)
+$domain = @($domain)
+
+$out_path = @($subPath)
 
 function Inspect-AllRBACAssignment {
     Try {
         $results = 0
+
+        $tenantID = (((Invoke-WebRequest -Uri "https://login.microsoftonline.com/$domain/.well-known/openid-configuration" -UseBasicParsing).Content | ConvertFrom-Json).token_endpoint -split '/')[3]
 
         $rescourceTypes = @('Microsoft.Compute/virtualMachines/extensions', 'Microsoft.Resources/templateSpecs/versions', 'Microsoft.Automation/automationAccounts/runbooks')
 
@@ -69,7 +73,7 @@ function Inspect-AllRBACAssignment {
 
                 $results += 1
 
-                $result | Export-Csv -Path "$(@($subPath))\All_Resource_RBAC_Assignment.csv" -NoTypeInformation -Delimiter ';' -Append
+                $result | Export-Csv -Path "$($out_path)\All_Resource_RBAC_Assignment.csv" -NoTypeInformation -Delimiter ';' -Append
             }
 
             Write-Progress -Activity "Processing Azure Objects" -Status $progressMsg -PercentComplete $progress

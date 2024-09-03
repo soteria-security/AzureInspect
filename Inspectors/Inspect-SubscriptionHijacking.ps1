@@ -6,10 +6,14 @@ $errorHandling = "$((Get-Item $PSScriptRoot).Parent.FullName)\Write-ErrorLog.ps1
 . $errorHandling
 
 function Inspect-SubscriptionHijacking {
-	Try {
+    Try {
         $results = @()
 
-        $header = @{Authorization= "Bearer $((Get-AzAccessToken).token)"}
+        <# $token = ((Get-AzAccessToken -AsSecureString).token) | ConvertFrom-SecureString
+
+        $header = @{Authorization = "Bearer $($token)" } #>
+
+        $header = @{Authorization = "Bearer $((Get-AzAccessToken).token)" }
         
         $response = (Invoke-RestMethod -Method Get -Uri 'https://management.azure.com/providers/Microsoft.Subscription/policies/default?api-version=2021-10-01' -Headers $header).Properties
 
@@ -40,9 +44,9 @@ function Inspect-SubscriptionHijacking {
         Else {
             return $null
         }
-	}
-	Catch {
-		Write-Warning "Error message: $_"
+    }
+    Catch {
+        Write-Warning "Error message: $_"
     
         $message = $_.ToString()
         $exception = $_.Exception
@@ -56,7 +60,7 @@ function Inspect-SubscriptionHijacking {
         Write-Verbose "Write to log"
         Write-ErrorLog -message $message -exception $exception -scriptname $scriptname -failinglinenumber $failinglinenumber -failingline $failingline -pscommandpath $pscommandpath -positionmsg $pscommandpath -stacktrace $strace
         Write-Verbose "Errors written to log"
-	}
+    }
 }
 
 return Inspect-SubscriptionHijacking

@@ -45,7 +45,6 @@
     https://github.com/soteria-security/AzureInspect
 #>
 
-
 param (
     [Parameter(Mandatory = $true,
         HelpMessage = 'Organization name')]
@@ -59,6 +58,9 @@ param (
     [Parameter(Mandatory = $false,
         HelpMessage = 'Skip Required Module Check')] #Intended for testing and troubleshooting purposes only!
     [switch]$SkipModuleCheck,
+    [Parameter(Mandatory = $false,
+        HelpMessage = 'Retest Assessment. Uses Retest Template')]
+    [switch]$retest,
     [Parameter(Mandatory = $true,
         HelpMessage = 'Auth type')]
     [ValidateSet('ALREADY_AUTHED', 'MFA', 'DEVICE', 'APP',
@@ -70,6 +72,8 @@ param (
         HelpMessage = 'Do not disconnect at the end of the run')] #Intended for testing and troubleshooting purposes only!
     [switch]$DoNotDisconnect
 )
+
+#$WarningPreference = 'SilentlyContinue'
 
 # Import script used for Error logging
 . .\Write-ErrorLog.ps1
@@ -91,20 +95,12 @@ Function Connect-Services {
             $tenantID = (((Invoke-WebRequest -Uri "https://login.microsoftonline.com/$domain/.well-known/openid-configuration" -UseBasicParsing).Content | ConvertFrom-Json).token_endpoint -split '/')[3]
 
             Write-Output "Connecting to Azure Services"
-            Connect-AzAccount -TenantId $tenantID
+            Connect-AzAccount -TenantId $tenantID -Scope Process
             # Connect to Microsoft Graph
             Write-Output "Connecting to Microsoft Graph"
-            Connect-MgGraph -Scopes "AuditLog.Read.All", "Policy.Read.All", "Directory.Read.All", "IdentityProvider.Read.All", "Organization.Read.All", "User.Read.All", "UserAuthenticationMethod.Read.All"
+            Connect-MgGraph -ContextScope Process -Scopes "AuditLog.Read.All", "Policy.Read.All", "Directory.Read.All", "IdentityProvider.Read.All", "Organization.Read.All", "User.Read.All", "UserAuthenticationMethod.Read.All"
             #Select-MgProfile -Name beta
             Write-Output "Connected via Graph to $((Get-MgOrganization).DisplayName)"
-
-            # Elevate Access to read Subscription Policies
-            Try {
-                Invoke-RestMethod -Method Post -Uri "https://management.azure.com/providers/Microsoft.Authorization/elevateAccess?api-version=2016-07-01" -Headers @{Authorization = "Bearer $((Get-AzAccessToken -AsSecureString).Token)" }
-            }
-            Catch {
-                Write-Host "Error. Manual elevation required."
-            }
         }
         If ($auth -EQ "DEVICE") {
             If ($domain -like "*@*") {
@@ -120,13 +116,6 @@ Function Connect-Services {
             Connect-MgGraph -Scopes "AuditLog.Read.All", "Policy.Read.All", "Directory.Read.All", "IdentityProvider.Read.All", "Organization.Read.All", "User.Read.All", "UserAuthenticationMethod.Read.All"
             #Select-MgProfile -Name beta
             Write-Output "Connected via Graph to $((Get-MgOrganization).DisplayName)"
-            # Elevate Access to read Subscription Policies
-            Try {
-                Invoke-RestMethod -Method Post -Uri "https://management.azure.com/providers/Microsoft.Authorization/elevateAccess?api-version=2016-07-01" -Headers @{Authorization = "Bearer $((Get-AzAccessToken -AsSecureString).Token)" }
-            }
-            Catch {
-                Write-Host "Error. Manual elevation required. https://learn.microsoft.com/en-us/azure/role-based-access-control/elevate-access-global-admin?tabs=azure-portal"
-            }
         }
         If ($auth -EQ "APP") {
             # Gather necessary information
@@ -266,6 +255,8 @@ Catch {
     Confirm-Close
 }
 
+$tenantID = (((Invoke-WebRequest -Uri "https://login.microsoftonline.com/$domain/.well-known/openid-configuration" -UseBasicParsing).Content | ConvertFrom-Json).token_endpoint -split '/')[3]
+
 Try {
     $subscriptions = Get-AzSubscription -TenantId $tenantID
 }
@@ -389,7 +380,12 @@ If ($subscriptions) {
 
             # Function that retrieves templating information from 
             function Parse-Template {
-                $template = (Get-Content ".\AzureInspectDefaultTemplate.html") -join "`n"
+                If ($retest.IsPresent) {
+                    $template = (Get-Content ".\AzureInspectRetestTemplate.html") -join "`n"
+                }
+                Else {
+                    $template = (Get-Content ".\AzureInspectDefaultTemplate.html") -join "`n"
+                }
                 $template -match '\<!--BEGIN_FINDING_LONG_REPEATER-->([\s\S]*)\<!--END_FINDING_LONG_REPEATER-->'
                 $findings_long_template = $matches[1]
                 
@@ -441,6 +437,10 @@ If ($subscriptions) {
                     $short_finding_html = $short_finding_html.Replace("{{FINDING_NUMBER}}", $findings_count.ToString())
                     $long_finding_html = $long_finding_html.Replace("{{FINDING_NAME}}", $finding.FindingName)
                     $long_finding_html = $long_finding_html.Replace("{{FINDING_NUMBER}}", $findings_count.ToString())
+                    If ($retest.IsPresent) {
+                        $short_finding_html = $short_finding_html.Replace("{{FINDING_STATUS}}", "")
+                        $long_finding_html = $long_finding_html.Replace("{{FINDING_STATUS}}", "")
+                    }
                     
                     # Finding Impact
                     If ($finding.Impact -eq 'Critical') {
@@ -458,6 +458,21 @@ If ($subscriptions) {
                         $long_finding_html = $long_finding_html.Replace("{{IMPACT}}", $finding.Impact)
                     }
                     
+                    If ($finding.RiskRating -eq 'Critical') {
+                        $htmlRisk = '<span style="color:Crimson;"><strong>Critical</strong></span>'
+                        $short_finding_html = $short_finding_html.Replace("{{RISKRATING}}", $htmlRisk)
+                        $long_finding_html = $long_finding_html.Replace("{{RISKRATING}}", $htmlRisk)
+                    }
+                    ElseIf ($finding.RiskRating -eq 'High') {
+                        $htmlRisk = '<span style="color:DarkOrange;"><strong>High</strong></span>'
+                        $short_finding_html = $short_finding_html.Replace("{{RISKRATING}}", $htmlRisk)
+                        $long_finding_html = $long_finding_html.Replace("{{RISKRATING}}", $htmlRisk)
+                    }
+                    Else {
+                        $short_finding_html = $short_finding_html.Replace("{{RISKRATING}}", $finding.RiskRating)
+                        $long_finding_html = $long_finding_html.Replace("{{RISKRATING}}", $finding.RiskRating)
+                    }
+
                     # Finding description
                     $long_finding_html = $long_finding_html.Replace("{{DESCRIPTION}}", $finding.Description)
                     
@@ -569,5 +584,6 @@ if (!$DoNotDisconnect) {
     }
 }
 
+#$WarningPreference = 'Continue'
 
 return
