@@ -9,11 +9,9 @@ function Inspect-SubscriptionHijacking {
     Try {
         $results = @()
 
-        <# $token = ((Get-AzAccessToken -AsSecureString).token) | ConvertFrom-SecureString
+        $token = ((Get-AzAccessToken -AsSecureString).token) | ConvertFrom-SecureString -AsPlainText
 
-        $header = @{Authorization = "Bearer $($token)" } #>
-
-        $header = @{Authorization = "Bearer $((Get-AzAccessToken).token)" }
+        $header = @{Authorization = "Bearer $($token)" }
         
         $response = (Invoke-RestMethod -Method Get -Uri 'https://management.azure.com/providers/Microsoft.Subscription/policies/default?api-version=2021-10-01' -Headers $header).Properties
 
