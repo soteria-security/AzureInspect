@@ -11,12 +11,22 @@ function Inspect-KeyVaultMonitoring {
         
         $keyVaults = Get-AzKeyVault -WarningAction SilentlyContinue
 
-        Foreach ($vault in $keyVaults){
+        Foreach ($vault in $keyVaults) {
             $vault = Get-AzKeyVault -VaultName $vault.VaultName -WarningAction SilentlyContinue
-            If ($null -eq (Get-AzLog -ResourceId $vault.ResourceId -WarningAction SilentlyContinue)){
-                $result = New-Object psobject
-                $result | Add-Member -MemberType NoteProperty -name 'Vault' -Value $vault.VaultName -ErrorAction SilentlyContinue
-                $result | Add-Member -MemberType NoteProperty -name 'Location' -Value $vault.Location -ErrorAction SilentlyContinue
+            
+            If ($null -eq (Get-AzDiagnosticSetting -ResourceId $vault.ResourceId -WarningAction SilentlyContinue)) {
+                $result = [PSCustomObject]@{
+                    Vault    = $vault.VaultName
+                    Location = $vault.Location
+                }
+
+                $results += $result
+            }
+            ElseIf (((($diagnosticSettings.Log | ConvertFrom-Json) | Where-Object { $_.categoryGroup -eq 'audit' }).enabled -eq $false) -and ((($diagnosticSettings.Log | ConvertFrom-Json) | Where-Object { $_.categoryGroup -eq 'allLogs' }).enabled -eq $false)) {
+                $result = [PSCustomObject]@{
+                    Vault    = $vault.VaultName
+                    Location = $vault.Location
+                }
 
                 $results += $result
             }
@@ -25,8 +35,8 @@ function Inspect-KeyVaultMonitoring {
             
         If ($results.Count -NE 0) {
             $findings = @()
-            foreach ($x in $results){
-                $findings += "Cluster Name: $($x.Vault), Location: $($x.Location)"
+            foreach ($x in $results) {
+                $findings += "Vault Name: $($x.Vault), Location: $($x.Location)"
             }
             return $findings
         }
