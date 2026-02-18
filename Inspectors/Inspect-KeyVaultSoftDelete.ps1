@@ -1,54 +1,13 @@
-
-$ErrorActionPreference = "Stop"
-
-$errorHandling = "$((Get-Item $PSScriptRoot).Parent.FullName)\Write-ErrorLog.ps1"
-
-. $errorHandling
-
-function Inspect-KeyVaultSoftDelete {
-    Try {
-        $results = @()
-        
-        $keyVaults = Get-AzKeyVault -WarningAction SilentlyContinue
-
-        Foreach ($vault in $keyVaults){
-            $vault = Get-AzKeyVault -VaultName $vault.VaultName -WarningAction SilentlyContinue
-            If ($vault.EnableSoftDelete -ne $true){
-                $result = New-Object psobject
-                $result | Add-Member -MemberType NoteProperty -name 'Vault' -Value $vault.VaultName -ErrorAction SilentlyContinue
-                $result | Add-Member -MemberType NoteProperty -name 'Location' -Value $vault.Location -ErrorAction SilentlyContinue
-
-                $results += $result
-            }
+# Check if Key Vaults have soft delete enabled
+$findings = @()
+Get-AzKeyVault | ForEach-Object {
+    $vault = Get-AzKeyVault -VaultName $_.VaultName
+    if (-not $vault.EnableSoftDelete) {
+        $findings += [PSCustomObject]@{
+            Severity = "Medium"
+            Resource = $_.VaultName
+            Finding = "Key Vault does not have soft delete enabled"
         }
-
-            
-        If ($results.Count -NE 0) {
-            $findings = @()
-            foreach ($x in $results){
-                $findings += "Cluster Name: $($x.Vault), Location: $($x.Location)"
-            }
-            return $findings
-        }
-        
-        return $null
-    }
-    Catch {
-        Write-Warning "Error message: $_"
-    
-        $message = $_.ToString()
-        $exception = $_.Exception
-        $strace = $_.ScriptStackTrace
-        $failingline = $_.InvocationInfo.Line
-        $positionmsg = $_.InvocationInfo.PositionMessage
-        $pscommandpath = $_.InvocationInfo.PSCommandPath
-        $failinglinenumber = $_.InvocationInfo.ScriptLineNumber
-        $scriptname = $_.InvocationInfo.ScriptName
-        Write-Warning $message
-        Write-Verbose "Write to log"
-        Write-ErrorLog -message $message -exception $exception -scriptname $scriptname -failinglinenumber $failinglinenumber -failingline $failingline -pscommandpath $pscommandpath -positionmsg $pscommandpath -stacktrace $strace
-        Write-Verbose "Errors written to log"
     }
 }
-
-return Inspect-KeyVaultSoftDelete
+$findings
